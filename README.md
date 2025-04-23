@@ -52,15 +52,19 @@ This project uses GitHub Actions for continuous integration and deployment.
 - **Build**: Builds the application and verifies it compiles correctly
 - **Test**: Runs the linter and unit tests
 - **Integration Tests**: Runs end-to-end tests simulating user interactions
+- **Deploy**: Deploys the application to staging or production environments
+- **Security Audit**: Checks dependencies for vulnerabilities (runs weekly)
+- **Code Quality**: Analyzes code with ESLint and checks TypeScript types
+- **Stale Issues**: Automatically marks and closes stale issues and PRs
 
 ### Setting up GitHub Secrets
 
 For the CI/CD workflows to function correctly, you need to add the following secrets to your GitHub repository:
 
 1. Go to your GitHub repository → Settings → Secrets and variables → Actions
-2. Add a new repository secret:
-   - Name: `OPENAI_API_KEY`
-   - Value: Your OpenAI API key
+2. Add these repository secrets:
+   - `OPENAI_API_KEY`: Your OpenAI API key (required)
+   - `SNYK_TOKEN`: Your Snyk token for security scanning (optional)
 
 ### Running Tests Locally
 
@@ -74,6 +78,16 @@ npm run lint
 # Run integration tests
 npm run test:integration
 ```
+
+### Manual Deployments
+
+You can manually trigger deployments using the GitHub Actions interface:
+
+1. Go to the Actions tab in your repository
+2. Select the "Deploy" workflow
+3. Click "Run workflow"
+4. Choose the target environment (staging or production)
+5. Click "Run workflow"
 
 ## Project Structure
 

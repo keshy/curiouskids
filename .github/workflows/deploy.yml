@@ -1,0 +1,69 @@
+name: Deploy
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environment to deploy to'
+        required: true
+        default: 'staging'
+        type: choice
+        options:
+          - staging
+          - production
+
+jobs:
+  deploy:
+    name: Deploy to ${{ github.event.inputs.environment || 'staging' }}
+    runs-on: ubuntu-latest
+    environment:
+      name: ${{ github.event.inputs.environment || 'staging' }}
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Use Node.js 20.x
+      uses: actions/setup-node@v3
+      with:
+        node-version: 20.x
+        cache: 'npm'
+        
+    - name: Install dependencies
+      run: npm ci
+      
+    - name: Build
+      run: npm run build
+      
+    - name: Run linting and tests
+      run: |
+        npm run lint
+        npm run test
+        
+    - name: Deploy to staging
+      if: ${{ github.event.inputs.environment == 'staging' || github.event.inputs.environment == null }}
+      run: |
+        echo "Deploying to staging environment"
+        # Add your staging deployment commands here
+        # For example: npx firebase deploy --only hosting --project staging
+      env:
+        OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        
+    - name: Deploy to production
+      if: ${{ github.event.inputs.environment == 'production' }}
+      run: |
+        echo "Deploying to production environment"
+        # Add your production deployment commands here
+        # For example: npx firebase deploy --only hosting --project production
+      env:
+        OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        
+    - name: Notify deployment status
+      if: always()
+      run: |
+        if [ "${{ job.status }}" == "success" ]; then
+          echo "Deployment successful!"
+        else
+          echo "Deployment failed!"
+        fi
