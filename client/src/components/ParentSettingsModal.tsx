@@ -42,7 +42,7 @@ export default function ParentSettingsModal({ settings, onClose, onSave }: Paren
         
         <div className="space-y-6">
           <div>
-            <h3 className="text-xl font-bold mb-2">Audio Settings</h3>
+            <h3 className="text-xl font-bold mb-2 text-gray-800">Audio Settings</h3>
             <div className="flex items-center justify-between">
               <span className="text-lg">Text-to-Speech</span>
               <label className="relative inline-flex items-center cursor-pointer">
@@ -55,13 +55,13 @@ export default function ParentSettingsModal({ settings, onClose, onSave }: Paren
                   })}
                   className="sr-only peer"
                 />
-                <div className="w-14 h-7 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[4px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-green"></div>
+                <div className="w-14 h-7 bg-gray-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-primary rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[4px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-primary"></div>
               </label>
             </div>
           </div>
           
           <div>
-            <h3 className="text-xl font-bold mb-2">Content Settings</h3>
+            <h3 className="text-xl font-bold mb-2 text-gray-800">Content Settings</h3>
             <div className="space-y-3">
               <div className="flex items-center justify-between">
                 <span className="text-lg">Show Images</span>
@@ -75,7 +75,7 @@ export default function ParentSettingsModal({ settings, onClose, onSave }: Paren
                     })}
                     className="sr-only peer"
                   />
-                  <div className="w-14 h-7 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[4px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-green"></div>
+                  <div className="w-14 h-7 bg-gray-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-primary rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[4px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-primary"></div>
                 </label>
               </div>
               
@@ -98,7 +98,7 @@ export default function ParentSettingsModal({ settings, onClose, onSave }: Paren
           </div>
           
           <div>
-            <h3 className="text-xl font-bold mb-2">Display Settings</h3>
+            <h3 className="text-xl font-bold mb-2 text-gray-800">Display Settings</h3>
             <div className="flex items-center justify-between">
               <span className="text-lg">High Contrast Mode</span>
               <label className="relative inline-flex items-center cursor-pointer">
@@ -111,7 +111,7 @@ export default function ParentSettingsModal({ settings, onClose, onSave }: Paren
                   })}
                   className="sr-only peer"
                 />
-                <div className="w-14 h-7 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[4px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-green"></div>
+                <div className="w-14 h-7 bg-gray-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-primary rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[4px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-primary"></div>
               </label>
             </div>
           </div>
