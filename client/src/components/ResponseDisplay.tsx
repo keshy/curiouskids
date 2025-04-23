@@ -165,12 +165,24 @@ export default function ResponseDisplay({
 
   return (
     <div className="bg-white rounded-3xl p-6 shadow-lg mb-8">
-      <h2 className="text-2xl font-bold text-center mb-4 text-green">My Answer</h2>
+      <h2 className="text-2xl font-bold text-center mb-4 text-primary">My Answer</h2>
       
       {isLoading ? (
         <div className="flex flex-col items-center py-8">
-          <div className="w-16 h-16 border-4 border-primary border-t-transparent rounded-full animate-spin mb-4"></div>
-          <p className="text-xl text-gray-500 text-center">Thinking about your question...</p>
+          <div className="thinking-animation relative w-24 h-24 mb-4">
+            <div className="absolute inset-0 bg-primary rounded-full opacity-20 animate-ping"></div>
+            <div className="absolute inset-0 flex items-center justify-center">
+              <div className="w-16 h-16 bg-primary rounded-full flex items-center justify-center animate-bounce">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-white animate-pulse" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                </svg>
+              </div>
+            </div>
+            <div className="absolute top-1 left-5 w-3 h-3 bg-yellow-300 rounded-full animate-bounce" style={{ animationDelay: "0.1s" }}></div>
+            <div className="absolute top-3 right-4 w-4 h-4 bg-orange rounded-full animate-bounce" style={{ animationDelay: "0.3s" }}></div>
+            <div className="absolute bottom-3 left-3 w-5 h-5 bg-accent rounded-full animate-bounce" style={{ animationDelay: "0.5s" }}></div>
+          </div>
+          <p className="text-xl text-primary font-semibold text-center">Thinking about your question...</p>
         </div>
       ) : !response ? (
         // Empty state (shown initially)

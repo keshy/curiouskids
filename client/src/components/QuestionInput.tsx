@@ -61,7 +61,7 @@ export default function QuestionInput({
         {!isListening && (
           <button 
             onClick={handleStartRecording}
-            className="button-press flex items-center justify-center bg-orange hover:bg-orange-400 text-white text-xl font-bold py-4 px-8 rounded-full shadow-lg hover:shadow-xl transition-all mx-auto border-2 border-orange"
+            className="button-press flex items-center justify-center bg-orange hover:bg-orange-400 text-white text-xl font-bold py-4 px-8 rounded-full shadow-lg hover:shadow-xl transition-all mx-auto"
           >
             <i className="ri-mic-line mr-2 text-2xl"></i>
             <span>Talk to Me!</span>
