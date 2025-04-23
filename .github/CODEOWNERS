@@ -1,0 +1,18 @@
+# These owners will be the default owners for everything in the repo.
+# Unless a later match takes precedence, they will be requested for
+# review when someone opens a pull request.
+*       @project-maintainer
+
+# Server code
+/server/ @backend-team
+
+# Client code
+/client/ @frontend-team
+
+# Shared utilities
+/shared/ @core-team
+
+# Configuration files
+*.config.js @devops-team
+*.config.ts @devops-team
+.github/workflows/ @devops-team
