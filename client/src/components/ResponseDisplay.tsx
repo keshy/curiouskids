@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { Response } from "./AskMeBuddy";
 import useAudioPlayer from "@/hooks/useAudioPlayer";
 import useSpeechSynthesis from "@/hooks/useSpeechSynthesis";
@@ -17,16 +17,27 @@ export default function ResponseDisplay({
   onSpeakingEnd
 }: ResponseDisplayProps) {
   const [isPlaying, setIsPlaying] = useState(false);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
   
-  // Use speech synthesis for text-to-speech
-  const { speak, speaking, cancel } = useSpeechSynthesis();
+  // Use speech synthesis as a fallback if no server audio is available
+  const { speak, speaking, cancel } = useSpeechSynthesis({
+    onEnd: onSpeakingEnd,
+  });
   
   // Reset playing state when response changes
   useEffect(() => {
+    console.log("Response changed:", response);
     setIsPlaying(false);
+    setAudioProgress(0);
+    
+    // If there's an audio element, stop it
+    if (audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current.currentTime = 0;
+    }
   }, [response]);
   
-  // Auto-play speech when a new response arrives and text-to-speech is enabled
+  // Auto-play audio when a new response arrives and text-to-speech is enabled
   useEffect(() => {
     if (response && textToSpeech && !isLoading) {
       handlePlay();
@@ -34,35 +45,122 @@ export default function ResponseDisplay({
     
     return () => {
       cancel();
+      if (audioRef.current) {
+        audioRef.current.pause();
+      }
     };
   }, [response, isLoading, textToSpeech]);
   
-  // Monitor speaking state and notify parent when done
+  // State for audio progress
+  const [audioProgress, setAudioProgress] = useState(0);
+  
+  // Set up audio event listeners when the audio URL changes
   useEffect(() => {
-    if (!speaking && isPlaying) {
-      setIsPlaying(false);
-      onSpeakingEnd();
+    if (!response?.audioUrl) return;
+    
+    // Create a new audio element if it doesn't exist
+    if (!audioRef.current) {
+      audioRef.current = new Audio();
     }
-  }, [speaking, isPlaying, onSpeakingEnd]);
+    
+    // Set up event listeners for the audio element
+    const audio = audioRef.current;
+    audio.src = response.audioUrl;
+    
+    const handleAudioEnd = () => {
+      setIsPlaying(false);
+      setAudioProgress(0);
+      onSpeakingEnd();
+    };
+    
+    const handleAudioError = (e: Event) => {
+      console.error("Error playing audio:", e);
+      setIsPlaying(false);
+      setAudioProgress(0);
+      
+      // Fallback to browser speech synthesis if server audio fails
+      if (textToSpeech && response.text) {
+        speak(response.text);
+      }
+    };
+    
+    const handleTimeUpdate = () => {
+      if (audio.duration) {
+        setAudioProgress((audio.currentTime / audio.duration) * 100);
+      }
+    };
+    
+    audio.addEventListener("ended", handleAudioEnd);
+    audio.addEventListener("error", handleAudioError);
+    audio.addEventListener("timeupdate", handleTimeUpdate);
+    
+    return () => {
+      audio.removeEventListener("ended", handleAudioEnd);
+      audio.removeEventListener("error", handleAudioError);
+      audio.removeEventListener("timeupdate", handleTimeUpdate);
+    };
+  }, [response?.audioUrl, textToSpeech, onSpeakingEnd]);
   
   const handlePlay = () => {
     if (!response) return;
     
-    if (!isPlaying) {
-      speak(response.text);
-      setIsPlaying(true);
-    } else {
-      cancel();
-      setIsPlaying(false);
+    console.log("Playing response with audioUrl:", response.audioUrl);
+    
+    // If we have server-generated audio, play that
+    if (response.audioUrl && audioRef.current) {
+      console.log("Using server audio:", response.audioUrl);
+      if (!isPlaying) {
+        audioRef.current.play()
+          .then(() => {
+            setIsPlaying(true);
+          })
+          .catch(error => {
+            console.error("Failed to play audio:", error);
+            // Fallback to speech synthesis
+            speak(response.text);
+          });
+      } else {
+        audioRef.current.pause();
+        setIsPlaying(false);
+      }
+    } 
+    // Otherwise use browser speech synthesis
+    else if (response.text) {
+      console.log("Using browser speech synthesis");
+      if (!isPlaying) {
+        speak(response.text);
+        setIsPlaying(true);
+      } else {
+        cancel();
+        setIsPlaying(false);
+      }
     }
   };
   
   const handleReplay = () => {
     if (!response) return;
     
+    // Cancel any ongoing speech or audio
     cancel();
-    speak(response.text);
-    setIsPlaying(true);
+    if (audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current.currentTime = 0;
+    }
+    
+    // Start playback again
+    if (response.audioUrl && audioRef.current) {
+      audioRef.current.play()
+        .then(() => {
+          setIsPlaying(true);
+        })
+        .catch(() => {
+          // Fallback to speech synthesis
+          speak(response.text);
+        });
+    } else if (response.text) {
+      speak(response.text);
+      setIsPlaying(true);
+    }
   };
 
   return (
@@ -97,7 +195,10 @@ export default function ResponseDisplay({
               <div className="bg-gray-300 h-2 rounded-full w-48 relative">
                 <div 
                   className="bg-accent h-full rounded-full" 
-                  style={{ width: isPlaying ? '100%' : '0%', transition: 'width 0.3s' }}
+                  style={{ 
+                    width: `${audioProgress}%`,
+                    transition: 'width 0.1s linear'
+                  }}
                 ></div>
               </div>
               <button 

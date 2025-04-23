@@ -16,18 +16,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
     next();
   });
   app.use('/audio', (req, res) => {
-    const options = {
-      root: path.join(process.cwd(), 'public', 'audio'),
-      headers: {
-        'Content-Type': 'audio/mpeg',
-      }
-    };
-    res.sendFile(req.path, options, (err) => {
-      if (err) {
-        console.error('Error sending audio file:', err);
-        res.status(err.status || 500).end();
-      }
-    });
+    try {
+      const options = {
+        root: path.join(process.cwd(), 'public', 'audio'),
+        headers: {
+          'Content-Type': 'audio/mpeg',
+        }
+      };
+      res.sendFile(req.path, options);
+    } catch (error) {
+      console.error('Error sending audio file:', error);
+      res.status(500).send('Error serving audio file');
+    }
   });
 
   // Validate the ask request body using zod
