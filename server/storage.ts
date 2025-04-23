@@ -1,4 +1,4 @@
-import { users, type User, type InsertUser } from "@shared/schema";
+import { users, type User, type InsertUser, type Question, type InsertQuestion } from "@shared/schema";
 
 // modify the interface with any CRUD methods
 // you might need
@@ -7,15 +7,21 @@ export interface IStorage {
   getUser(id: number): Promise<User | undefined>;
   getUserByUsername(username: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
+  createQuestion(question: InsertQuestion): Promise<Question>;
+  getRecentQuestions(limit: number): Promise<Question[]>;
 }
 
 export class MemStorage implements IStorage {
   private users: Map<number, User>;
-  currentId: number;
+  private questions: Map<number, Question>;
+  userCurrentId: number;
+  questionCurrentId: number;
 
   constructor() {
     this.users = new Map();
-    this.currentId = 1;
+    this.questions = new Map();
+    this.userCurrentId = 1;
+    this.questionCurrentId = 1;
   }
 
   async getUser(id: number): Promise<User | undefined> {
@@ -29,10 +35,28 @@ export class MemStorage implements IStorage {
   }
 
   async createUser(insertUser: InsertUser): Promise<User> {
-    const id = this.currentId++;
+    const id = this.userCurrentId++;
     const user: User = { ...insertUser, id };
     this.users.set(id, user);
     return user;
+  }
+  
+  async createQuestion(insertQuestion: InsertQuestion): Promise<Question> {
+    const id = this.questionCurrentId++;
+    const question: Question = { ...insertQuestion, id };
+    this.questions.set(id, question);
+    return question;
+  }
+  
+  async getRecentQuestions(limit: number): Promise<Question[]> {
+    // Get all questions and sort by createdAt in descending order
+    const allQuestions = Array.from(this.questions.values());
+    const sortedQuestions = allQuestions.sort((a, b) => {
+      return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+    });
+    
+    // Return the specified number of most recent questions
+    return sortedQuestions.slice(0, limit);
   }
 }
 
