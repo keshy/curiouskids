@@ -23,6 +23,7 @@ export const questions = pgTable("questions", {
   question: text("question").notNull(),
   answer: text("answer").notNull(),
   imageUrl: text("image_url"),
+  audioUrl: text("audio_url"),
   createdAt: text("created_at").notNull(),
 });
 
@@ -30,6 +31,7 @@ export const insertQuestionSchema = createInsertSchema(questions).pick({
   question: true,
   answer: true,
   imageUrl: true,
+  audioUrl: true,
   createdAt: true,
 });
 
@@ -41,9 +43,11 @@ export type AskRequest = {
   question: string;
   contentFilter: "strict" | "moderate" | "standard";
   generateImage: boolean;
+  generateAudio: boolean;
 };
 
 export type AskResponse = {
   text: string;
   imageUrl: string;
+  audioUrl?: string;
 };

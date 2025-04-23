@@ -1,10 +1,20 @@
 import OpenAI from "openai";
+import fs from "fs";
+import path from "path";
+import { v4 as uuidv4 } from "uuid";
+import { Buffer } from "buffer";
 
 // the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
 
 const openai = new OpenAI({ 
   apiKey: process.env.OPENAI_API_KEY || "sk-placeholder" 
 });
+
+// Make sure the audio directory exists
+const audioDir = path.join(process.cwd(), "public", "audio");
+if (!fs.existsSync(audioDir)) {
+  fs.mkdirSync(audioDir, { recursive: true });
+}
 
 // Generate child-friendly answers to questions
 export async function generateAnswer(question: string, contentFilter: string): Promise<string> {
@@ -55,12 +65,40 @@ export async function generateImage(prompt: string): Promise<string> {
   }
 }
 
+// Generate audio from text
+export async function generateAudio(text: string): Promise<string> {
+  try {
+    const response = await openai.audio.speech.create({
+      model: "tts-1",
+      voice: "nova", // Child-friendly voice
+      input: text,
+    });
+
+    // Get the audio as a buffer
+    const buffer = Buffer.from(await response.arrayBuffer());
+
+    // Create a unique filename and path to save the audio
+    const filename = `answer_${uuidv4()}.mp3`;
+    const filepath = path.join(audioDir, filename);
+
+    // Write the file to disk
+    fs.writeFileSync(filepath, buffer);
+
+    // Return the URL path to the audio file
+    return `/audio/${filename}`;
+  } catch (error) {
+    console.error("Error generating audio from OpenAI:", error);
+    return "";
+  }
+}
+
 // Process the complete answer request
 export async function processQuestion(
   question: string, 
   contentFilter: string = "strict",
-  generateImg: boolean = true
-): Promise<{ text: string; imageUrl: string }> {
+  generateImg: boolean = true,
+  generateAud: boolean = true
+): Promise<{ text: string; imageUrl: string; audioUrl?: string }> {
   try {
     // Generate text answer
     const answer = await generateAnswer(question, contentFilter);
@@ -72,16 +110,24 @@ export async function processQuestion(
       const imagePrompt = `${question} - ${answer.substring(0, 100)}`;
       imageUrl = await generateImage(imagePrompt);
     }
+
+    // Generate audio if enabled
+    let audioUrl = "";
+    if (generateAud) {
+      audioUrl = await generateAudio(answer);
+    }
     
     return {
       text: answer,
-      imageUrl: imageUrl
+      imageUrl: imageUrl,
+      audioUrl: audioUrl
     };
   } catch (error) {
     console.error("Error processing question:", error);
     return {
       text: "I'm sorry, I couldn't understand that question. Can you ask me something else?",
-      imageUrl: ""
+      imageUrl: "",
+      audioUrl: ""
     };
   }
 }

@@ -72,7 +72,8 @@ export default function AskMeBuddy() {
         body: JSON.stringify({ 
           question,
           contentFilter: settings.contentFilter,
-          generateImage: settings.showImages
+          generateImage: settings.showImages,
+          generateAudio: settings.textToSpeech
         }),
       });
 
