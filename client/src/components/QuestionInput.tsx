@@ -53,15 +53,15 @@ export default function QuestionInput({
   };
 
   return (
-    <div className="bg-white rounded-3xl p-6 shadow-lg mb-6">
-      <h2 className="text-2xl font-bold text-center mb-4 text-accent">Ask Your Question</h2>
+    <div className="bg-white rounded-3xl p-6 shadow-lg mb-6 border border-gray-200">
+      <h2 className="text-2xl font-bold text-center mb-4 text-primary">Ask Your Question</h2>
       
       <div className="flex flex-col space-y-4">
         {/* Voice input button - show when not listening */}
         {!isListening && (
           <button 
             onClick={handleStartRecording}
-            className="button-press flex items-center justify-center bg-orange hover:bg-orange-400 text-white text-xl font-bold py-4 px-6 rounded-full shadow-md transition-colors mx-auto"
+            className="button-press flex items-center justify-center bg-orange hover:bg-orange-400 text-white text-xl font-bold py-4 px-8 rounded-full shadow-lg hover:shadow-xl transition-all mx-auto border-2 border-orange"
           >
             <i className="ri-mic-line mr-2 text-2xl"></i>
             <span>Talk to Me!</span>
