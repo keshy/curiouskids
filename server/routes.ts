@@ -46,7 +46,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { question, contentFilter, generateImage, generateAudio } = validatedData;
       
       // Get user ID if authenticated (use session or token)
-      const userId = req.session?.userId || null;
+      const userId = (req as any).session?.userId || null;
       
       // Process the question through OpenAI
       const answer = await processQuestion(question, contentFilter, generateImage, generateAudio);
@@ -68,8 +68,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         earnedBadge = await checkAndAwardBadges(userId, savedQuestion);
       }
       
-      // Prepare response
-      const response = {
+      // Prepare response with optional rewards field
+      const response: AskResponse = {
         text: answer.text,
         imageUrl: answer.imageUrl,
         audioUrl: answer.audioUrl,
