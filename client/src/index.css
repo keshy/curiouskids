@@ -70,8 +70,8 @@
   }
 
   body {
-    @apply font-comic antialiased text-foreground;
-    background: linear-gradient(135deg, #2c2c2c 0%, #424242 50%, #861717 100%);
+    @apply font-comic antialiased text-gray-200;
+    background: linear-gradient(135deg, #111827 0%, #1f2937 50%, #374151 100%);
     position: relative;
     overflow-x: hidden;
   }
@@ -87,8 +87,27 @@
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
-    opacity: 0.15;
+    opacity: 0.05;
     z-index: -1;
+  }
+
+  /* Card and input backgrounds */
+  .bg-white {
+    @apply bg-gray-800;
+  }
+
+  /* Text colors */
+  .text-gray-500 {
+    @apply text-gray-400;
+  }
+
+  .text-gray-700 {
+    @apply text-gray-300;
+  }
+
+  /* Button and interactive elements */
+  .bg-lightGray {
+    @apply bg-gray-700;
   }
 }
 
