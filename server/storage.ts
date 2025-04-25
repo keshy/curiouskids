@@ -142,7 +142,11 @@ export class MemStorage implements IStorage {
 
   async createUser(insertUser: InsertUser): Promise<User> {
     const id = this.userCurrentId++;
-    const user: User = { ...insertUser, id };
+    const user: User = { 
+      ...insertUser, 
+      id,
+      createdAt: new Date()
+    };
     this.users.set(id, user);
     return user;
   }
@@ -150,7 +154,11 @@ export class MemStorage implements IStorage {
   // Question history
   async createQuestion(insertQuestion: InsertQuestion): Promise<Question> {
     const id = this.questionCurrentId++;
-    const question: Question = { ...insertQuestion, id };
+    const question: Question = { 
+      ...insertQuestion, 
+      id,
+      createdAt: new Date()
+    };
     this.questions.set(id, question);
     return question;
   }

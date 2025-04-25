@@ -45,27 +45,46 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const validatedData = askRequestSchema.parse(req.body);
       const { question, contentFilter, generateImage, generateAudio } = validatedData;
       
+      // Get user ID if authenticated (use session or token)
+      const userId = req.session?.userId || null;
+      
       // Process the question through OpenAI
       const answer = await processQuestion(question, contentFilter, generateImage, generateAudio);
       
       // Store the question and answer in the database
-      const timestamp = new Date().toISOString();
-      
       const savedQuestion = await storage.createQuestion({
+        userId: userId,
         question,
         answer: answer.text,
         imageUrl: answer.imageUrl,
         audioUrl: answer.audioUrl,
-        createdAt: timestamp
       });
       
-      // Return the response with suggested questions
-      return res.json({
+      // Check if user earned any badges from this question
+      let earnedBadge = null;
+      if (userId) {
+        // Import badge controller
+        const { checkAndAwardBadges } = require('./badge-controller');
+        earnedBadge = await checkAndAwardBadges(userId, savedQuestion);
+      }
+      
+      // Prepare response
+      const response = {
         text: answer.text,
         imageUrl: answer.imageUrl,
         audioUrl: answer.audioUrl,
         suggestedQuestions: answer.suggestedQuestions,
-      });
+      };
+      
+      // Add badge information if earned
+      if (earnedBadge) {
+        response.rewards = {
+          badgeEarned: earnedBadge
+        };
+      }
+      
+      // Return the response
+      return res.json(response);
     } catch (error) {
       console.error("Error processing ask request:", error);
       
@@ -91,6 +110,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.error("Error fetching recent questions:", error);
       return res.status(500).json({ 
         message: "Failed to fetch recent questions" 
+      });
+    }
+  });
+  
+  // Get user badges
+  app.get("/api/badges", async (req, res) => {
+    try {
+      // Get user ID from session
+      const userId = req.session?.userId || null;
+      
+      if (!userId) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+      
+      // Import badge controller
+      const { getUserBadges } = require('./badges');
+      const badges = await getUserBadges(userId);
+      
+      return res.json(badges);
+    } catch (error) {
+      console.error("Error fetching badges:", error);
+      return res.status(500).json({ 
+        message: "Failed to fetch badges" 
       });
     }
   });

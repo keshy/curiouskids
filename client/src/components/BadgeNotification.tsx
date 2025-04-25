@@ -142,19 +142,7 @@ export default function BadgeNotification({
         </div>
       </div>
       
-      {/* Add CSS animation for confetti */}
-      <style jsx>{`
-        @keyframes fall {
-          0% {
-            transform: translateY(-100%) rotate(0deg);
-            opacity: 1;
-          }
-          100% {
-            transform: translateY(100vh) rotate(360deg);
-            opacity: 0;
-          }
-        }
-      `}</style>
+      {/* Animation styles are in index.css */}
     </div>
   );
 }
