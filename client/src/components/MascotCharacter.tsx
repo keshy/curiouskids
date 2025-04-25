@@ -23,23 +23,24 @@ export default function MascotCharacter({ state, speechBubbleText }: MascotChara
     <div className="flex justify-center mb-6">
       <div className="relative">
         <div id="mascot" className={mascotClasses}>
-          <div className="absolute inset-0 bg-blue-500 rounded-full transform scale-95"></div>
-          {/* Robot face */}
+          <div className="absolute inset-0 bg-gray-700 rounded-full transform scale-95"></div>
+          {/* Batman face */}
           <div className="z-10 flex flex-col items-center">
+            {/* Mask */}
+            <div className="absolute top-2 w-32 h-24 bg-black rounded-t-[80px]"></div>
             {/* Eyes */}
-            <div className="flex space-x-4 mb-2">
-              <div className="w-6 h-6 bg-white rounded-full flex items-center justify-center">
-                <div className="w-3 h-3 bg-black rounded-full"></div>
-              </div>
-              <div className="w-6 h-6 bg-white rounded-full flex items-center justify-center">
-                <div className="w-3 h-3 bg-black rounded-full"></div>
-              </div>
+            <div className="flex space-x-6 mb-2 relative top-6">
+              <div className="w-8 h-4 bg-white skew-x-12"></div>
+              <div className="w-8 h-4 bg-white -skew-x-12"></div>
             </div>
             {/* Mouth */}
-            <div className={mouthClasses}></div>
-            {/* Antenna */}
-            <div className="absolute -top-6 left-1/2 transform -translate-x-1/2 w-2 h-8 bg-gray-400 rounded-full">
-              <div className="w-4 h-4 bg-orange rounded-full absolute -top-3 left-1/2 transform -translate-x-1/2"></div>
+            <div className={`${mouthClasses} relative top-10`}></div>
+            {/* Ears */}
+            <div className="absolute -top-4 w-full">
+              <div className="relative w-full h-8">
+                <div className="absolute left-2 w-6 h-12 bg-black transform -skew-x-12 rotate-12"></div>
+                <div className="absolute right-2 w-6 h-12 bg-black transform skew-x-12 -rotate-12"></div>
+              </div>
             </div>
           </div>
         </div>
