@@ -61,6 +61,7 @@ export default function AskMeBuddy() {
     if (!question.trim()) return;
     
     setIsLoading(true);
+    setResponse(null); // Clear previous response
     setMascotState("thinking");
     setSpeechBubbleText("Great question! Let me think...");
 

@@ -1,6 +1,7 @@
 
 interface QuestionSuggestionsProps {
   suggestions?: string[];
+  defaultSuggestions?: string[];
   onSelectSuggestion: (suggestion: string) => void;
 }
 
@@ -11,9 +12,11 @@ const DEFAULT_SUGGESTIONS = [
 ];
 
 export default function QuestionSuggestions({ 
-  suggestions = DEFAULT_SUGGESTIONS, 
+  suggestions,
+  defaultSuggestions = DEFAULT_SUGGESTIONS, 
   onSelectSuggestion 
 }: QuestionSuggestionsProps) {
+  const displaySuggestions = suggestions || defaultSuggestions;
   const colors = [
     "bg-secondary hover:bg-yellow-400 text-gray-800",
     "bg-green hover:bg-green-600 text-white",
@@ -26,7 +29,7 @@ export default function QuestionSuggestions({
     <div className="mb-8">
       <h3 className="text-xl font-bold text-center mb-4 text-gray-700">Try asking...</h3>
       <div className="flex flex-wrap justify-center gap-3">
-        {suggestions.map((suggestion, index) => (
+        {displaySuggestions.map((suggestion, index) => (
           <button
             key={index}
             onClick={() => onSelectSuggestion(suggestion)}

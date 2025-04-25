@@ -58,8 +58,11 @@ async function generateContextualQuestions(question: string, answer: string): Pr
       temperature: 0.7,
     });
 
-    const suggestions = response.choices[0].message.content?.split('\n').filter(q => q.trim()) || [];
-    return suggestions.slice(0, 3);
+    const suggestions = response.choices[0].message.content?.split('\n')
+      .filter(q => q.trim())
+      .map(q => q.replace(/^\d+\.\s*/, ''))  // Remove leading numbers if present
+      .slice(0, 3);
+    return suggestions;
   } catch (error) {
     console.error("Error generating contextual questions:", error);
     return [
