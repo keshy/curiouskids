@@ -46,7 +46,7 @@ export default function MascotCharacter({ state, speechBubbleText }: MascotChara
         </div>
         {/* Speech bubble */}
         <div className="absolute -top-4 -right-28 bg-white rounded-2xl p-4 shadow-lg max-w-[200px] transform rotate-3 z-20">
-          <p className="text-lg">{speechBubbleText}</p>
+          <p className="text-lg text-black">{speechBubbleText}</p>
           <div className="absolute -left-3 bottom-5 w-0 h-0 border-t-[10px] border-r-[15px] border-b-[10px] border-transparent border-r-white"></div>
         </div>
       </div>
