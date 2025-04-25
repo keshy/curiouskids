@@ -40,13 +40,22 @@ export default function ResponseDisplay({
   useEffect(() => {
     if (response && textToSpeech && !isLoading) {
       setShouldShowPlayButton(true);
-      if (response.audioUrl) {
-        handlePlay().catch(error => {
-          console.warn("Failed to autoplay audio:", error);
-          // Keep showing play button for manual interaction
-        });
+      if (response.audioUrl && audioRef.current) {
+        audioRef.current.play()
+          .then(() => {
+            setIsPlaying(true);
+            setShouldShowPlayButton(false);
+          })
+          .catch(error => {
+            console.warn("Failed to autoplay audio:", error);
+            // Keep showing play button for manual interaction
+            setShouldShowPlayButton(true);
+          });
       } else {
         console.warn("No audio URL provided, falling back to browser TTS");
+        if (response.text) {
+          speak(response.text);
+        }
       }
     }
 
