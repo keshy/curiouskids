@@ -4,7 +4,7 @@ import path from "path";
 import { storage } from "./storage";
 import { processQuestion } from "./openai";
 import { z } from "zod";
-import { insertQuestionSchema } from "@shared/schema";
+import { insertQuestionSchema, AskResponse } from "@shared/schema";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Serve audio files from the public directory
@@ -118,7 +118,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/badges", async (req, res) => {
     try {
       // Get user ID from session
-      const userId = req.session?.userId || null;
+      const userId = (req as any).session?.userId || null;
       
       if (!userId) {
         return res.status(401).json({ message: "Unauthorized" });
