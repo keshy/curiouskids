@@ -35,6 +35,8 @@ export default function AskMeBuddy() {
   const [response, setResponse] = useState<Response | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [question, setQuestion] = useState("");
+  const [earnedBadge, setEarnedBadge] = useState<Badge | null>(null);
+  const [showBadgeNotification, setShowBadgeNotification] = useState(false);
   const [settings, setSettings] = useState<Settings>({
     textToSpeech: true,
     showImages: true,
@@ -101,14 +103,23 @@ export default function AskMeBuddy() {
         setCurrentSuggestions(data.suggestedQuestions);
       }
       
+      // Check for earned badges
+      if (data.rewards && data.rewards.badgeEarned) {
+        setEarnedBadge(data.rewards.badgeEarned);
+        setShowBadgeNotification(true);
+        
+        // Change speech bubble text to celebrate badge
+        setSpeechBubbleText(`Wow! You earned the ${data.rewards.badgeEarned.name} badge! Great job!`);
+      } else {
+        setSpeechBubbleText("How was that? Ask me something else!");
+      }
+      
       // After getting response, set mascot to speaking if text-to-speech is enabled
       if (settings.textToSpeech) {
         setMascotState("speaking");
       } else {
         setMascotState("idle");
       }
-      
-      setSpeechBubbleText("How was that? Ask me something else!");
     } catch (error) {
       console.error("Error asking question:", error);
       setSpeechBubbleText("Oops! I couldn't answer that. Try asking something else!");
@@ -241,6 +252,15 @@ export default function AskMeBuddy() {
           settings={settings}
           onClose={handleCloseSettings}
           onSave={handleSaveSettings}
+        />
+      )}
+
+      {/* Badge notification when a new badge is earned */}
+      {showBadgeNotification && earnedBadge && (
+        <BadgeNotification
+          badge={earnedBadge}
+          onClose={() => setShowBadgeNotification(false)}
+          autoCloseTime={6000}
         />
       )}
     </div>
