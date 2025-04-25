@@ -57,19 +57,19 @@ export default function QuestionInput({
   };
 
   return (
-    <div className={`bg-white rounded-3xl p-6 shadow-lg mb-6 border border-gray-200 ${isLoading ? 'opacity-80' : ''}`}>
+    <div className={`bg-gradient-to-br from-blue-100 to-pink-100 rounded-3xl p-6 shadow-lg mb-6 border border-purple-200 ${isLoading ? 'opacity-80' : ''}`}>
       <h2 className="text-2xl font-bold text-center mb-4 text-primary">
         {isLoading ? "Thinking deeply about..." : "Ask Your Question"}
       </h2>
       
       <div className="flex flex-col space-y-4">
         {isLoading && currentQuestion && (
-          <div className="text-center p-4 bg-gray-100 rounded-xl animate-pulse">
+          <div className="text-center p-4 bg-gradient-to-r from-yellow-100 to-orange-100 rounded-xl animate-pulse border-2 border-yellow-300">
             <p className="text-lg text-gray-700 mb-2">"{currentQuestion}"</p>
             <div className="flex justify-center gap-2">
-              <div className="w-2 h-2 bg-primary rounded-full animate-bounce" style={{ animationDelay: '0s' }}></div>
-              <div className="w-2 h-2 bg-primary rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
-              <div className="w-2 h-2 bg-primary rounded-full animate-bounce" style={{ animationDelay: '0.4s' }}></div>
+              <div className="w-3 h-3 bg-orange-500 rounded-full animate-bounce" style={{ animationDelay: '0s' }}></div>
+              <div className="w-3 h-3 bg-pink-500 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+              <div className="w-3 h-3 bg-purple-500 rounded-full animate-bounce" style={{ animationDelay: '0.4s' }}></div>
             </div>
           </div>
         )}

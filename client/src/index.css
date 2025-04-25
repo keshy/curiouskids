@@ -155,10 +155,10 @@
 
 .cloud {
   position: absolute;
-  background: rgba(255, 255, 255, 0.8);
+  background: rgba(135, 206, 250, 0.6);  /* Light sky blue, more transparent */
   border-radius: 50%;
   animation: float linear infinite;
-  box-shadow: 0 0 20px rgba(173, 216, 230, 0.5);
+  box-shadow: 0 0 20px rgba(100, 149, 237, 0.6); /* Cornflower blue shadow */
 }
 
 @keyframes float {
