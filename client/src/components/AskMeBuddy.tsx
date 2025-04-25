@@ -12,6 +12,7 @@ export type Response = {
   imageUrl: string;
   audioUrl?: string;
   suggestedQuestions?: string[];
+  isLoading?: boolean;
 };
 
 export type Settings = {
@@ -63,7 +64,8 @@ export default function AskMeBuddy() {
     
     setQuestion(newQuestion);
     setIsLoading(true);
-    setResponse(null); // Clear previous response
+    // Keep the previous response for suggestions, but mark as loading
+    setResponse(prevResponse => prevResponse ? {...prevResponse, isLoading: true} : null);
     setMascotState("thinking");
     setSpeechBubbleText("Great question! Let me think...");
 
@@ -87,6 +89,11 @@ export default function AskMeBuddy() {
 
       const data = await res.json();
       setResponse(data);
+      
+      // Update current suggestions with the new ones from response
+      if (data.suggestedQuestions && data.suggestedQuestions.length > 0) {
+        setCurrentSuggestions(data.suggestedQuestions);
+      }
       
       // After getting response, set mascot to speaking if text-to-speech is enabled
       if (settings.textToSpeech) {
@@ -116,6 +123,9 @@ export default function AskMeBuddy() {
     "What are dinosaurs?",
     "Why do we need to sleep?",
   ]);
+  
+  // Keep track of the current active suggestions to avoid going back to defaults
+  const [currentSuggestions, setCurrentSuggestions] = useState<string[] | undefined>(suggestions);
 
   // Create decorative clouds and bubbles
   const clouds = Array.from({ length: 8 }, (_, i) => ({
@@ -214,7 +224,7 @@ export default function AskMeBuddy() {
         />
         
         <QuestionSuggestions 
-          suggestions={response?.suggestedQuestions}
+          suggestions={response?.suggestedQuestions || currentSuggestions}
           defaultSuggestions={suggestions}
           onSelectSuggestion={handleQuestion}
         />
