@@ -5,6 +5,8 @@ import QuestionInput from "./QuestionInput";
 import ResponseDisplay from "./ResponseDisplay";
 import QuestionSuggestions from "./QuestionSuggestions";
 import ParentSettingsModal from "./ParentSettingsModal";
+import BadgeNotification from "./BadgeNotification";
+import type { Badge, Achievement } from "@shared/schema";
 
 export type MascotState = "idle" | "listening" | "thinking" | "speaking";
 export type Response = {
@@ -13,6 +15,10 @@ export type Response = {
   audioUrl?: string;
   suggestedQuestions?: string[];
   isLoading?: boolean;
+  rewards?: {
+    badgeEarned?: Badge;
+    achievementProgress?: Achievement;
+  };
 };
 
 export type Settings = {
