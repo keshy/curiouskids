@@ -50,4 +50,5 @@ export type AskResponse = {
   text: string;
   imageUrl: string;
   audioUrl?: string;
+  suggestedQuestions?: string[];
 };

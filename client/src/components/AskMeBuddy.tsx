@@ -74,7 +74,7 @@ export default function AskMeBuddy() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({ 
-          question,
+          question: newQuestion, // Use the newQuestion parameter, not the state
           contentFilter: settings.contentFilter,
           generateImage: settings.showImages,
           generateAudio: settings.textToSpeech
@@ -109,13 +109,13 @@ export default function AskMeBuddy() {
     setMascotState("idle");
   };
 
-  // Predefined question suggestions
-  const suggestions = [
+  // Default question suggestions (will be replaced by dynamic suggestions after first query)
+  const [suggestions, setSuggestions] = useState<string[]>([
     "Why is the sky blue?",
     "How do birds fly?",
     "What are dinosaurs?",
     "Why do we need to sleep?",
-  ];
+  ]);
 
   // Create decorative clouds
   const clouds = Array.from({ length: 10 }, (_, i) => ({

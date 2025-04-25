@@ -59,11 +59,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
         createdAt: timestamp
       });
       
-      // Return the response
+      // Return the response with suggested questions
       return res.json({
         text: answer.text,
         imageUrl: answer.imageUrl,
         audioUrl: answer.audioUrl,
+        suggestedQuestions: answer.suggestedQuestions,
       });
     } catch (error) {
       console.error("Error processing ask request:", error);

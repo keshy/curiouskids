@@ -58,7 +58,8 @@ async function generateContextualQuestions(question: string, answer: string): Pr
       temperature: 0.7,
     });
 
-    const suggestions = response.choices[0].message.content?.split('\n')
+    const content = response.choices[0].message.content || '';
+    const suggestions = content.split('\n')
       .filter(q => q.trim())
       .map(q => q.replace(/^\d+\.\s*/, ''))  // Remove leading numbers if present
       .slice(0, 3);
