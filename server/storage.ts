@@ -322,7 +322,7 @@ export class MemStorage implements IStorage {
       ...achievement,
       progress,
       completed,
-      updatedAt: new Date().toISOString()
+      updatedAt: new Date()
     };
     
     this.achievements.set(key, updated);
