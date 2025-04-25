@@ -165,7 +165,8 @@ export default function AskMeBuddy() {
         />
         
         <QuestionSuggestions 
-          suggestions={response?.suggestedQuestions || suggestions}
+          suggestions={response?.suggestedQuestions}
+          defaultSuggestions={suggestions}
           onSelectSuggestion={handleQuestion}
         />
       </div>
