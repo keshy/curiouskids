@@ -84,7 +84,7 @@ export default function SettingsPage() {
       
       <div className="container mx-auto px-4 py-8 max-w-4xl">
         <div className="mb-8 flex justify-between items-center bg-white p-5 rounded-xl shadow-md">
-          <h1 className="text-3xl md:text-4xl font-bold text-primary">My Settings</h1>
+          <h1 className="text-3xl md:text-4xl font-bold text-primary">User Preferences</h1>
           <Link href="/">
             <div className="bg-primary hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-full flex items-center cursor-pointer transition-all hover:scale-105">
               <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
