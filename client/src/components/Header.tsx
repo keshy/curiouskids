@@ -12,7 +12,7 @@ export default function Header({ onOpenSettings }: HeaderProps) {
   return (
     <header className="text-center mb-8">
       <div className="flex justify-between items-center">
-        <h1 className="text-4xl md:text-5xl font-bold text-primary mb-2">OptiBrain Prime</h1>
+        <h1 className="text-4xl md:text-5xl font-bold text-primary mb-2">BrainSpark</h1>
         <div className="flex items-center space-x-3">
           <Link href="/history">
             <div

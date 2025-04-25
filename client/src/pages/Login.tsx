@@ -24,7 +24,7 @@ export default function Login() {
     <div className="min-h-screen bg-gradient-to-br from-blue-100 to-pink-100 flex items-center justify-center px-4">
       <div className="max-w-lg w-full bg-gradient-to-br from-purple-100 to-green-100 rounded-3xl p-8 shadow-lg border-2 border-purple-200">
         <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold text-primary mb-2">Welcome to Ask Me Buddy!</h1>
+          <h1 className="text-4xl font-bold text-primary mb-2">Welcome to BrainSpark!</h1>
           <p className="text-xl text-gray-700">
             The fun learning companion for curious kids!
           </p>
