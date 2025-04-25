@@ -174,7 +174,7 @@ export default function ResponseDisplay({
         </div>
       ) : (
         <div>
-          {shouldShowPlayButton && (
+          {response && (
             <div className="flex justify-center mb-4">
               <div className="bg-lightGray rounded-full p-3 flex items-center space-x-3 shadow-md">
                 <button 
