@@ -126,16 +126,30 @@ export default function AskMeBuddy() {
     duration: Math.random() * 100 + 50,
   }));
   
-  // Create colorful floating bubbles
-  const bubbles = Array.from({ length: 12 }, (_, i) => ({
-    id: i,
-    size: Math.random() * 30 + 10,
-    top: Math.random() * 100,
-    left: Math.random() * 100,
-    color: `hsl(${Math.random() * 360}, 80%, 75%)`,
-    duration: Math.random() * 15 + 5,
-    delay: Math.random() * 5,
-  }));
+  // Create colorful floating bubbles with vibrant colors
+  const bubbles = Array.from({ length: 15 }, (_, i) => {
+    // More saturated and colorful palette
+    const colorPalette = [
+      'rgba(255, 105, 180, 0.7)', // Hot pink
+      'rgba(75, 0, 130, 0.6)',    // Indigo
+      'rgba(255, 69, 0, 0.7)',    // Orange-red
+      'rgba(0, 191, 255, 0.7)',   // Deep sky blue
+      'rgba(50, 205, 50, 0.7)',   // Lime green
+      'rgba(255, 215, 0, 0.7)',   // Gold
+      'rgba(138, 43, 226, 0.7)',  // Blue violet
+      'rgba(0, 206, 209, 0.7)',   // Turquoise
+    ];
+    
+    return {
+      id: i,
+      size: Math.random() * 40 + 15,
+      top: Math.random() * 100,
+      left: Math.random() * 100,
+      color: colorPalette[Math.floor(Math.random() * colorPalette.length)],
+      duration: Math.random() * 15 + 5,
+      delay: Math.random() * 5,
+    };
+  });
 
   return (
     <div className="relative overflow-hidden min-h-screen">

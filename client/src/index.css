@@ -71,7 +71,7 @@
 
   body {
     @apply font-comic antialiased text-gray-800;
-    background: linear-gradient(135deg, #e0f7ff 0%, #ffffff 50%, #f0f9ff 100%);
+    background: linear-gradient(135deg, #c9f0ff 0%, #fcf4ff 50%, #e6f9ff 100%);
     position: relative;
     overflow-x: hidden;
   }
@@ -87,7 +87,7 @@
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
-    opacity: 0.15;
+    opacity: 0.35;
     z-index: -1;
   }
 
@@ -184,9 +184,11 @@
 }
 
 @keyframes rise {
-  0% { transform: translateY(100vh) scale(0.8); opacity: 0.2; }
-  50% { opacity: 0.6; }
-  100% { transform: translateY(-100px) scale(1.2); opacity: 0; }
+  0% { transform: translateY(100vh) scale(0.8) rotate(0deg); opacity: 0.4; }
+  25% { transform: translateY(75vh) scale(0.9) rotate(15deg); }
+  50% { transform: translateY(50vh) scale(1.0) rotate(0deg); opacity: 0.8; }
+  75% { transform: translateY(25vh) scale(1.1) rotate(-15deg); }
+  100% { transform: translateY(-50px) scale(1.2) rotate(0deg); opacity: 0; }
 }
 
 /* Star twinkling animation for history page */
