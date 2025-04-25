@@ -198,7 +198,7 @@ export default function ResponseDisplay({
 
           <div className="flex flex-col md:flex-row gap-6 items-center">
             <div className="md:w-1/2 order-2 md:order-1">
-              <p className="text-xl leading-relaxed">{response.text}</p>
+              <p className="text-xl leading-relaxed text-black">{response.text}</p>
             </div>
             <div className="md:w-1/2 order-1 md:order-2">
               {response.imageUrl && (
