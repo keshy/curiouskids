@@ -170,7 +170,7 @@ export default function ResponseDisplay({
           <div className="w-48 h-48 bg-gray-200 rounded-2xl flex items-center justify-center mb-4">
             <i className="ri-question-mark text-gray-400 text-7xl"></i>
           </div>
-          <p className="text-xl text-gray-500 text-center">Ask me a question and I'll give you a fun answer!</p>
+          <p className="text-xl text-black text-center">Ask me a question and I'll give you a fun answer!</p>
         </div>
       ) : (
         <div>
