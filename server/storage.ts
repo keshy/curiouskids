@@ -206,7 +206,7 @@ export class MemStorage implements IStorage {
     const newBadge: Badge = {
       ...badge,
       id,
-      createdAt: now.toISOString()
+      createdAt: now
     };
     this.badges.set(id, newBadge);
     return newBadge;
@@ -241,7 +241,7 @@ export class MemStorage implements IStorage {
     const userBadge: UserBadge = {
       userId,
       badgeId,
-      earnedAt: now.toISOString(),
+      earnedAt: now,
       displayOrder: 0,
       favorite: false
     };
@@ -288,7 +288,7 @@ export class MemStorage implements IStorage {
       const updated: Achievement = {
         ...existing,
         ...achievement,
-        updatedAt: new Date().toISOString()
+        updatedAt: new Date()
       };
       
       this.achievements.set(key, updated);
@@ -301,7 +301,7 @@ export class MemStorage implements IStorage {
     const newAchievement: Achievement = {
       ...achievement,
       id,
-      updatedAt: now.toISOString()
+      updatedAt: now
     };
     
     this.achievements.set(key, newAchievement);
