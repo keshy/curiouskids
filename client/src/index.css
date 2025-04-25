@@ -70,12 +70,25 @@
   }
 
   body {
-    @apply font-comic antialiased bg-[color:var(--soft-white)] text-foreground;
-    background-image: url('https://images.unsplash.com/photo-1557682224-5b8590cd9ec5?w=1200&auto=format&fit=crop&q=80');
+    @apply font-comic antialiased text-foreground;
+    background: linear-gradient(135deg, #1a237e 0%, #0d47a1 50%, #b71c1c 100%);
+    position: relative;
+    overflow-x: hidden;
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-image: url('https://images.unsplash.com/photo-1635805737707-575885ab0820?w=1200&auto=format&fit=crop&q=80');
     background-size: cover;
-    background-attachment: fixed;
     background-position: center;
     background-repeat: no-repeat;
+    opacity: 0.15;
+    z-index: -1;
   }
 }
 
