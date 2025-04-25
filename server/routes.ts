@@ -59,11 +59,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
         createdAt: timestamp
       });
       
-      // Return the response
+      // Return the response with suggested questions
       return res.json({
         text: answer.text,
         imageUrl: answer.imageUrl,
         audioUrl: answer.audioUrl,
+        suggestedQuestions: answer.suggestedQuestions,
       });
     } catch (error) {
       console.error("Error processing ask request:", error);
@@ -84,7 +85,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Get recent questions
   app.get("/api/questions/recent", async (req, res) => {
     try {
-      const questions = await storage.getRecentQuestions(10);
+      const questions = await storage.getRecentQuestions(20);
       return res.json(questions);
     } catch (error) {
       console.error("Error fetching recent questions:", error);

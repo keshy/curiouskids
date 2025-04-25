@@ -58,7 +58,8 @@ async function generateContextualQuestions(question: string, answer: string): Pr
       temperature: 0.7,
     });
 
-    const suggestions = response.choices[0].message.content?.split('\n')
+    const content = response.choices[0].message.content || '';
+    const suggestions = content.split('\n')
       .filter(q => q.trim())
       .map(q => q.replace(/^\d+\.\s*/, ''))  // Remove leading numbers if present
       .slice(0, 3);
@@ -95,8 +96,8 @@ export async function generateImage(prompt: string): Promise<string> {
 export async function generateAudio(text: string): Promise<string> {
   try {
     const response = await openai.audio.speech.create({
-      model: "tts-1",
-      voice: "nova",
+      model: "tts-1-hd", // Use the higher quality model
+      voice: "shimmer", // Use the 'shimmer' voice which has an Indian English accent
       input: text,
     });
 

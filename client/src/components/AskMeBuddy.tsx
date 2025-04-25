@@ -74,7 +74,7 @@ export default function AskMeBuddy() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({ 
-          question,
+          question: newQuestion, // Use the newQuestion parameter, not the state
           contentFilter: settings.contentFilter,
           generateImage: settings.showImages,
           generateAudio: settings.textToSpeech
@@ -109,22 +109,47 @@ export default function AskMeBuddy() {
     setMascotState("idle");
   };
 
-  // Predefined question suggestions
-  const suggestions = [
+  // Default question suggestions (will be replaced by dynamic suggestions after first query)
+  const [suggestions, setSuggestions] = useState<string[]>([
     "Why is the sky blue?",
     "How do birds fly?",
     "What are dinosaurs?",
     "Why do we need to sleep?",
-  ];
+  ]);
 
-  // Create decorative clouds
-  const clouds = Array.from({ length: 10 }, (_, i) => ({
+  // Create decorative clouds and bubbles
+  const clouds = Array.from({ length: 8 }, (_, i) => ({
     id: i,
     width: Math.random() * 100 + 100,
     top: Math.random() * 100,
     left: Math.random() * 100,
     duration: Math.random() * 100 + 50,
   }));
+  
+  // Create colorful floating bubbles with vibrant colors
+  const bubbles = Array.from({ length: 15 }, (_, i) => {
+    // More saturated and colorful palette
+    const colorPalette = [
+      'rgba(255, 105, 180, 0.7)', // Hot pink
+      'rgba(75, 0, 130, 0.6)',    // Indigo
+      'rgba(255, 69, 0, 0.7)',    // Orange-red
+      'rgba(0, 191, 255, 0.7)',   // Deep sky blue
+      'rgba(50, 205, 50, 0.7)',   // Lime green
+      'rgba(255, 215, 0, 0.7)',   // Gold
+      'rgba(138, 43, 226, 0.7)',  // Blue violet
+      'rgba(0, 206, 209, 0.7)',   // Turquoise
+    ];
+    
+    return {
+      id: i,
+      size: Math.random() * 40 + 15,
+      top: Math.random() * 100,
+      left: Math.random() * 100,
+      color: colorPalette[Math.floor(Math.random() * colorPalette.length)],
+      duration: Math.random() * 15 + 5,
+      delay: Math.random() * 5,
+    };
+  });
 
   return (
     <div className="relative overflow-hidden min-h-screen">
@@ -140,6 +165,25 @@ export default function AskMeBuddy() {
               top: `${cloud.top}%`,
               left: `${cloud.left}%`,
               animationDuration: `${cloud.duration}s`,
+            }}
+          />
+        ))}
+      </div>
+      
+      {/* Colorful floating bubbles */}
+      <div className="bubbles">
+        {bubbles.map((bubble) => (
+          <div
+            key={bubble.id}
+            className="bubble"
+            style={{
+              width: `${bubble.size}px`,
+              height: `${bubble.size}px`,
+              top: `${bubble.top}%`,
+              left: `${bubble.left}%`,
+              backgroundColor: bubble.color,
+              animationDuration: `${bubble.duration}s`,
+              animationDelay: `${bubble.delay}s`,
             }}
           />
         ))}

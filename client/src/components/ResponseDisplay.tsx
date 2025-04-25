@@ -145,30 +145,30 @@ export default function ResponseDisplay({
   };
 
   return (
-    <div className="bg-white rounded-3xl p-6 shadow-lg mb-8">
+    <div className="bg-gradient-to-br from-purple-100 to-green-100 rounded-3xl p-6 shadow-lg mb-8 border-2 border-purple-200">
       <h2 className="text-2xl font-bold text-center mb-4 text-primary">My Answer</h2>
 
       {isLoading ? (
         <div className="flex flex-col items-center py-8">
           <div className="thinking-animation relative w-24 h-24 mb-4">
-            <div className="absolute inset-0 bg-primary rounded-full opacity-20 animate-ping"></div>
+            <div className="absolute inset-0 bg-pink-500 rounded-full opacity-20 animate-ping"></div>
             <div className="absolute inset-0 flex items-center justify-center">
-              <div className="w-16 h-16 bg-primary rounded-full flex items-center justify-center animate-bounce">
+              <div className="w-16 h-16 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full flex items-center justify-center animate-bounce">
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-white animate-pulse" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
                 </svg>
               </div>
             </div>
-            <div className="absolute top-1 left-5 w-3 h-3 bg-yellow-300 rounded-full animate-bounce" style={{ animationDelay: "0.1s" }}></div>
-            <div className="absolute top-3 right-4 w-4 h-4 bg-orange rounded-full animate-bounce" style={{ animationDelay: "0.3s" }}></div>
-            <div className="absolute bottom-3 left-3 w-5 h-5 bg-accent rounded-full animate-bounce" style={{ animationDelay: "0.5s" }}></div>
+            <div className="absolute top-1 left-5 w-4 h-4 bg-yellow-300 rounded-full animate-bounce" style={{ animationDelay: "0.1s" }}></div>
+            <div className="absolute top-3 right-4 w-5 h-5 bg-orange-500 rounded-full animate-bounce" style={{ animationDelay: "0.3s" }}></div>
+            <div className="absolute bottom-3 left-3 w-6 h-6 bg-green-400 rounded-full animate-bounce" style={{ animationDelay: "0.5s" }}></div>
           </div>
           <p className="text-xl text-primary font-semibold text-center">Thinking about your question...</p>
         </div>
       ) : !response ? (
         <div className="flex flex-col items-center py-8">
-          <div className="w-48 h-48 bg-gray-200 rounded-2xl flex items-center justify-center mb-4">
-            <i className="ri-question-mark text-gray-400 text-7xl"></i>
+          <div className="w-48 h-48 bg-gradient-to-br from-yellow-200 to-orange-300 rounded-2xl flex items-center justify-center mb-4 border-2 border-yellow-300">
+            <i className="ri-question-mark text-yellow-600 text-7xl"></i>
           </div>
           <p className="text-xl text-black text-center">Ask me a question and I'll give you a fun answer!</p>
         </div>
@@ -176,16 +176,16 @@ export default function ResponseDisplay({
         <div>
           {response && (
             <div className="flex justify-center mb-4">
-              <div className="bg-lightGray rounded-full p-3 flex items-center space-x-3 shadow-md">
+              <div className="bg-gradient-to-r from-indigo-200 to-blue-200 rounded-full p-3 flex items-center space-x-3 shadow-md border border-indigo-300">
                 <button 
                   onClick={handlePlay}
-                  className="button-press bg-accent hover:bg-purple-700 text-white rounded-full p-3 transition-colors"
+                  className="button-press bg-gradient-to-br from-indigo-500 to-purple-500 hover:from-indigo-600 hover:to-purple-600 text-white rounded-full p-3 transition-colors"
                 >
                   <i className={`ri-${isPlaying ? 'pause' : 'play'}-fill text-2xl`}></i>
                 </button>
-                <div className="bg-gray-300 h-2 rounded-full w-48 relative">
+                <div className="bg-white h-3 rounded-full w-48 relative border border-blue-300">
                   <div 
-                    className="bg-accent h-full rounded-full" 
+                    className="bg-gradient-to-r from-indigo-500 to-purple-500 h-full rounded-full" 
                     style={{ 
                       width: `${audioProgress}%`,
                       transition: 'width 0.1s linear'
@@ -197,7 +197,7 @@ export default function ResponseDisplay({
           )}
 
           <div className="flex flex-col md:flex-row gap-6 items-center">
-            <div className="md:w-1/2 order-2 md:order-1">
+            <div className="md:w-1/2 order-2 md:order-1 bg-white/60 p-4 rounded-xl border border-purple-200">
               <p className="text-xl leading-relaxed text-black">{response.text}</p>
             </div>
             <div className="md:w-1/2 order-1 md:order-2">
@@ -205,7 +205,7 @@ export default function ResponseDisplay({
                 <img 
                   src={response.imageUrl} 
                   alt="Visual representation of the answer"
-                  className="w-full h-64 object-cover rounded-2xl shadow-md" 
+                  className="w-full h-64 object-cover rounded-2xl shadow-md border-2 border-purple-300" 
                 />
               )}
             </div>
