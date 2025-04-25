@@ -6,6 +6,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import NotFound from "@/pages/not-found";
 import Home from "@/pages/Home";
 import History from "@/pages/History";
+import Profile from "@/pages/Profile";
 import Login from "@/pages/Login";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import { useEffect } from "react";
@@ -42,6 +43,7 @@ function Router() {
       <Route path="/login" component={Login} />
       <Route path="/" component={() => <ProtectedRoute component={Home} />} />
       <Route path="/history" component={() => <ProtectedRoute component={History} />} />
+      <Route path="/profile" component={() => <ProtectedRoute component={Profile} />} />
       <Route component={NotFound} />
     </Switch>
   );

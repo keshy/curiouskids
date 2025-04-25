@@ -1,30 +1,48 @@
 import { useState, useEffect } from "react";
-import { Link } from "wouter";
+import { Link, useLocation } from "wouter";
 import { apiRequest } from "@/lib/queryClient";
 import { Question } from "@shared/schema";
+import { useAuth } from "@/contexts/AuthContext";
 
 export default function History() {
   const [questions, setQuestions] = useState<Question[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const { user } = useAuth();
+  const [_, navigate] = useLocation();
 
-  // Fetch recent questions on component mount
+  // Redirect to login if user is not authenticated or is a guest
   useEffect(() => {
-    const fetchRecentQuestions = async () => {
+    if (!user) {
+      navigate("/login");
+      return;
+    }
+    
+    if (user.isGuest) {
+      navigate("/");
+      return;
+    }
+  }, [user, navigate]);
+
+  // Fetch user's questions on component mount
+  useEffect(() => {
+    if (!user || user.isGuest) return; // Don't fetch if not logged in
+    
+    const fetchUserQuestions = async () => {
       try {
         setLoading(true);
-        const data = await apiRequest<Question[]>(`/api/questions/recent`);
+        const data = await apiRequest<Question[]>(`/api/questions/user`);
         setQuestions(data);
       } catch (err) {
         console.error("Error fetching question history:", err);
-        setError("Failed to load question history. Please try again later.");
+        setError("Failed to load your question history. Please try again later.");
       } finally {
         setLoading(false);
       }
     };
 
-    fetchRecentQuestions();
-  }, []);
+    fetchUserQuestions();
+  }, [user]);
 
   // Format date string
   const formatDate = (dateValue: string | Date) => {
@@ -63,7 +81,7 @@ export default function History() {
               <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
                 <path fillRule="evenodd" d="M9.707 14.707a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 1.414L7.414 9H15a1 1 0 110 2H7.414l2.293 2.293a1 1 0 010 1.414z" clipRule="evenodd" />
               </svg>
-              Back to OptiBrain Prime
+              Back to BrainSpark
             </div>
           </Link>
         </div>

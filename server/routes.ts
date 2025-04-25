@@ -114,6 +114,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
+  // Get questions for the current user (authenticated users only)
+  app.get("/api/questions/user", async (req, res) => {
+    try {
+      // Get user ID from session
+      const userId = (req as any).session?.userId;
+      
+      if (!userId) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+      
+      // Fetch questions for this user
+      const questions = await storage.getUserQuestions(userId, 20);
+      return res.json(questions);
+    } catch (error) {
+      console.error("Error fetching user questions:", error);
+      return res.status(500).json({ 
+        message: "Failed to fetch your questions" 
+      });
+    }
+  });
+  
   // Get user badges
   app.get("/api/badges", async (req, res) => {
     try {
