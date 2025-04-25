@@ -39,8 +39,13 @@ export default function ResponseDisplay({
 
   useEffect(() => {
     if (response && textToSpeech && !isLoading) {
-      setShouldShowPlayButton(false);
-      handlePlay();
+      if (response.audioUrl) {
+        setShouldShowPlayButton(false);
+        handlePlay();
+      } else {
+        setShouldShowPlayButton(true);
+        console.warn("No audio URL provided, falling back to browser TTS");
+      }
     }
 
     return () => {

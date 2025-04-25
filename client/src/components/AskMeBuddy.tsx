@@ -11,6 +11,7 @@ export type Response = {
   text: string;
   imageUrl: string;
   audioUrl?: string;
+  suggestedQuestions?: string[];
 };
 
 export type Settings = {
@@ -164,7 +165,7 @@ export default function AskMeBuddy() {
         />
         
         <QuestionSuggestions 
-          suggestions={suggestions}
+          suggestions={response?.suggestedQuestions || suggestions}
           onSelectSuggestion={handleQuestion}
         />
       </div>
