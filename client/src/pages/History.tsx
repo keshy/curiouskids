@@ -96,7 +96,7 @@ export default function History() {
           </div>
         ) : questions.length === 0 ? (
           <div className="bg-blue-100 border-l-4 border-blue-500 text-blue-700 p-4 rounded shadow-md">
-            <p>No questions have been asked yet. Go back and ask OptiBrain Prime something!</p>
+            <p>No questions have been asked yet. Go back and ask BrainSpark something!</p>
           </div>
         ) : (
           <div className="space-y-6">
