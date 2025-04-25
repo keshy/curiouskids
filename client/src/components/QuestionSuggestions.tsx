@@ -1,10 +1,19 @@
+
 interface QuestionSuggestionsProps {
-  suggestions: string[];
+  suggestions?: string[];
   onSelectSuggestion: (suggestion: string) => void;
 }
 
-export default function QuestionSuggestions({ suggestions, onSelectSuggestion }: QuestionSuggestionsProps) {
-  // Define a set of colors to rotate through for the suggestions
+const DEFAULT_SUGGESTIONS = [
+  "Why is the sky blue?",
+  "How do birds fly?",
+  "What makes rainbows appear?"
+];
+
+export default function QuestionSuggestions({ 
+  suggestions = DEFAULT_SUGGESTIONS, 
+  onSelectSuggestion 
+}: QuestionSuggestionsProps) {
   const colors = [
     "bg-secondary hover:bg-yellow-400 text-gray-800",
     "bg-green hover:bg-green-600 text-white",

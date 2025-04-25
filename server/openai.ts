@@ -1,22 +1,19 @@
+
 import OpenAI from "openai";
 import fs from "fs";
 import path from "path";
 import { v4 as uuidv4 } from "uuid";
 import { Buffer } from "buffer";
 
-// the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
-
 const openai = new OpenAI({ 
   apiKey: process.env.OPENAI_API_KEY || "sk-placeholder" 
 });
 
-// Make sure the audio directory exists
 const audioDir = path.join(process.cwd(), "public", "audio");
 if (!fs.existsSync(audioDir)) {
   fs.mkdirSync(audioDir, { recursive: true });
 }
 
-// Generate child-friendly answers to questions
 export async function generateAnswer(question: string, contentFilter: string): Promise<string> {
   try {
     const systemPrompt = `You are a friendly assistant for 5-year-old children. 
@@ -44,7 +41,35 @@ export async function generateAnswer(question: string, contentFilter: string): P
   }
 }
 
-// Generate an image related to the question and answer
+async function generateContextualQuestions(question: string, answer: string): Promise<string[]> {
+  try {
+    const prompt = `Based on this child's question: "${question}" and the answer: "${answer}", 
+    suggest 3 follow-up questions that would help a 5-year-old learn more about this topic. 
+    The questions should build upon their curiosity and understanding progressively. 
+    Keep questions simple, engaging, and age-appropriate. Return only the questions, one per line.`;
+
+    const response = await openai.chat.completions.create({
+      model: "gpt-4o",
+      messages: [
+        { role: "system", content: "You are designing questions for 5-year-old children." },
+        { role: "user", content: prompt }
+      ],
+      max_tokens: 150,
+      temperature: 0.7,
+    });
+
+    const suggestions = response.choices[0].message.content?.split('\n').filter(q => q.trim()) || [];
+    return suggestions.slice(0, 3);
+  } catch (error) {
+    console.error("Error generating contextual questions:", error);
+    return [
+      "What else would you like to know?",
+      "Can you tell me more about what interests you?",
+      "Would you like to learn about something else?"
+    ];
+  }
+}
+
 export async function generateImage(prompt: string): Promise<string> {
   try {
     const imagePrompt = `A child-friendly, colorful illustration of ${prompt}. Make it educational, bright, and suitable for 5-year-olds. No text.`;
@@ -60,31 +85,22 @@ export async function generateImage(prompt: string): Promise<string> {
     return response.data[0].url || "";
   } catch (error) {
     console.error("Error generating image from OpenAI:", error);
-    // Return a default image URL for fallback
     return "https://images.unsplash.com/photo-1606167668584-78701c57f13d?w=600&auto=format&fit=crop&q=80";
   }
 }
 
-// Generate audio from text
 export async function generateAudio(text: string): Promise<string> {
   try {
     const response = await openai.audio.speech.create({
       model: "tts-1",
-      voice: "nova", // Child-friendly voice
+      voice: "nova",
       input: text,
     });
 
-    // Get the audio as a buffer
     const buffer = Buffer.from(await response.arrayBuffer());
-
-    // Create a unique filename and path to save the audio
     const filename = `answer_${uuidv4()}.mp3`;
     const filepath = path.join(audioDir, filename);
-
-    // Write the file to disk
     fs.writeFileSync(filepath, buffer);
-
-    // Return the URL path to the audio file
     return `/audio/${filename}`;
   } catch (error) {
     console.error("Error generating audio from OpenAI:", error);
@@ -92,42 +108,41 @@ export async function generateAudio(text: string): Promise<string> {
   }
 }
 
-// Process the complete answer request
 export async function processQuestion(
   question: string, 
   contentFilter: string = "strict",
   generateImg: boolean = true,
   generateAud: boolean = true
-): Promise<{ text: string; imageUrl: string; audioUrl?: string }> {
+): Promise<{ text: string; imageUrl: string; audioUrl?: string; suggestedQuestions?: string[] }> {
   try {
-    // Generate text answer
     const answer = await generateAnswer(question, contentFilter);
     
-    // Generate image if enabled
     let imageUrl = "";
     if (generateImg) {
-      // Use both question and answer to create a better image prompt
       const imagePrompt = `${question} - ${answer.substring(0, 100)}`;
       imageUrl = await generateImage(imagePrompt);
     }
 
-    // Generate audio if enabled
     let audioUrl = "";
     if (generateAud) {
       audioUrl = await generateAudio(answer);
     }
     
+    const suggestedQuestions = await generateContextualQuestions(question, answer);
+    
     return {
       text: answer,
       imageUrl: imageUrl,
-      audioUrl: audioUrl
+      audioUrl: audioUrl,
+      suggestedQuestions: suggestedQuestions
     };
   } catch (error) {
     console.error("Error processing question:", error);
     return {
       text: "I'm sorry, I couldn't understand that question. Can you ask me something else?",
       imageUrl: "",
-      audioUrl: ""
+      audioUrl: "",
+      suggestedQuestions: []
     };
   }
 }
