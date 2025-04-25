@@ -71,7 +71,7 @@
 
   body {
     @apply font-comic antialiased text-foreground;
-    background: linear-gradient(135deg, #1a237e 0%, #0d47a1 50%, #b71c1c 100%);
+    background: linear-gradient(135deg, #2c2c2c 0%, #424242 50%, #861717 100%);
     position: relative;
     overflow-x: hidden;
   }
@@ -83,7 +83,7 @@
     left: 0;
     right: 0;
     bottom: 0;
-    background-image: url('https://images.unsplash.com/photo-1635805737707-575885ab0820?w=1200&auto=format&fit=crop&q=80');
+    background-image: url('https://images.unsplash.com/photo-1608889175123-8ee362201f81?w=1200&auto=format&fit=crop&q=80');
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
