@@ -95,8 +95,8 @@ export async function generateImage(prompt: string): Promise<string> {
 export async function generateAudio(text: string): Promise<string> {
   try {
     const response = await openai.audio.speech.create({
-      model: "tts-1",
-      voice: "nova",
+      model: "tts-1-hd", // Use the higher quality model
+      voice: "shimmer", // Use the 'shimmer' voice which has an Indian English accent
       input: text,
     });
 

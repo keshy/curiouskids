@@ -6,7 +6,7 @@ export default function Header({ onOpenSettings }: HeaderProps) {
   return (
     <header className="text-center mb-8">
       <div className="flex justify-between items-center">
-        <h1 className="text-4xl md:text-5xl font-bold text-primary mb-2">Question Buddy-ji</h1>
+        <h1 className="text-4xl md:text-5xl font-bold text-primary mb-2">OptiBrain Prime</h1>
         <button 
           onClick={onOpenSettings}
           className="bg-white rounded-full p-3 shadow-md hover:bg-lightGray transition-colors button-press" 
