@@ -216,6 +216,7 @@ export class MemStorage implements IStorage {
     const newBadge: Badge = {
       ...badge,
       id,
+      rarity: badge.rarity || "common", // Ensure rarity is never undefined
       createdAt: now
     };
     this.badges.set(id, newBadge);
@@ -298,6 +299,8 @@ export class MemStorage implements IStorage {
       const updated: Achievement = {
         ...existing,
         ...achievement,
+        progress: achievement.progress || 0, // Ensure progress is a number
+        completed: achievement.completed || false, // Ensure completed is a boolean
         updatedAt: new Date()
       };
       
@@ -311,6 +314,8 @@ export class MemStorage implements IStorage {
     const newAchievement: Achievement = {
       ...achievement,
       id,
+      progress: achievement.progress || 0, // Ensure progress is a number
+      completed: achievement.completed || false, // Ensure completed is a boolean
       updatedAt: now
     };
     

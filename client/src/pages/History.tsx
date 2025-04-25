@@ -27,8 +27,8 @@ export default function History() {
   }, []);
 
   // Format date string
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
+  const formatDate = (dateValue: string | Date) => {
+    const date = typeof dateValue === 'string' ? new Date(dateValue) : dateValue;
     return date.toLocaleString();
   };
 
