@@ -6,6 +6,8 @@ interface QuestionInputProps {
   onStopListening: () => void;
   onSubmitQuestion: (question: string) => void;
   isListening: boolean;
+  isLoading?: boolean;
+  currentQuestion?: string;
 }
 
 export default function QuestionInput({
@@ -13,6 +15,8 @@ export default function QuestionInput({
   onStopListening,
   onSubmitQuestion,
   isListening,
+  isLoading = false,
+  currentQuestion = "",
 }: QuestionInputProps) {
   const [textInput, setTextInput] = useState("");
   
@@ -53,12 +57,24 @@ export default function QuestionInput({
   };
 
   return (
-    <div className="bg-white rounded-3xl p-6 shadow-lg mb-6 border border-gray-200">
-      <h2 className="text-2xl font-bold text-center mb-4 text-primary">Ask Your Question</h2>
+    <div className={`bg-white rounded-3xl p-6 shadow-lg mb-6 border border-gray-200 ${isLoading ? 'opacity-80' : ''}`}>
+      <h2 className="text-2xl font-bold text-center mb-4 text-primary">
+        {isLoading ? "Thinking deeply about..." : "Ask Your Question"}
+      </h2>
       
       <div className="flex flex-col space-y-4">
+        {isLoading && currentQuestion && (
+          <div className="text-center p-4 bg-gray-100 rounded-xl animate-pulse">
+            <p className="text-lg text-gray-700 mb-2">"{currentQuestion}"</p>
+            <div className="flex justify-center gap-2">
+              <div className="w-2 h-2 bg-primary rounded-full animate-bounce" style={{ animationDelay: '0s' }}></div>
+              <div className="w-2 h-2 bg-primary rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+              <div className="w-2 h-2 bg-primary rounded-full animate-bounce" style={{ animationDelay: '0.4s' }}></div>
+            </div>
+          </div>
+        )}
         {/* Voice input button - show when not listening */}
-        {!isListening && (
+        {!isListening && !isLoading && (
           <button 
             onClick={handleStartRecording}
             className="button-press flex items-center justify-center bg-primary hover:bg-primary/80 text-white text-xl font-bold py-4 px-8 rounded-full shadow-lg hover:shadow-xl transition-all mx-auto"

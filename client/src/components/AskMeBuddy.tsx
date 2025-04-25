@@ -156,6 +156,8 @@ export default function AskMeBuddy() {
           onStopListening={handleStopListening}
           onSubmitQuestion={handleQuestion}
           isListening={mascotState === "listening"}
+          isLoading={isLoading}
+          currentQuestion={response?.text ? undefined : mascotState === "thinking" ? "thinking..." : undefined}
         />
         
         <ResponseDisplay 
