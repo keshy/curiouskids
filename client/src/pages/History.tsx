@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link } from "wouter";
-import { getQueryFn } from "@/lib/queryClient";
+import { apiRequest } from "@/lib/queryClient";
 import { Question } from "@shared/schema";
 
 export default function History() {
@@ -13,8 +13,7 @@ export default function History() {
     const fetchRecentQuestions = async () => {
       try {
         setLoading(true);
-        const fetchFn = getQueryFn<Question[]>({ on401: "throw" });
-        const data = await fetchFn("/api/questions/recent");
+        const data = await apiRequest<Question[]>(`/api/questions/recent`);
         setQuestions(data);
       } catch (err) {
         console.error("Error fetching question history:", err);
