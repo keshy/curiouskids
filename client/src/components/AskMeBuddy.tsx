@@ -117,13 +117,24 @@ export default function AskMeBuddy() {
     "Why do we need to sleep?",
   ]);
 
-  // Create decorative clouds
-  const clouds = Array.from({ length: 10 }, (_, i) => ({
+  // Create decorative clouds and bubbles
+  const clouds = Array.from({ length: 8 }, (_, i) => ({
     id: i,
     width: Math.random() * 100 + 100,
     top: Math.random() * 100,
     left: Math.random() * 100,
     duration: Math.random() * 100 + 50,
+  }));
+  
+  // Create colorful floating bubbles
+  const bubbles = Array.from({ length: 12 }, (_, i) => ({
+    id: i,
+    size: Math.random() * 30 + 10,
+    top: Math.random() * 100,
+    left: Math.random() * 100,
+    color: `hsl(${Math.random() * 360}, 80%, 75%)`,
+    duration: Math.random() * 15 + 5,
+    delay: Math.random() * 5,
   }));
 
   return (
@@ -140,6 +151,25 @@ export default function AskMeBuddy() {
               top: `${cloud.top}%`,
               left: `${cloud.left}%`,
               animationDuration: `${cloud.duration}s`,
+            }}
+          />
+        ))}
+      </div>
+      
+      {/* Colorful floating bubbles */}
+      <div className="bubbles">
+        {bubbles.map((bubble) => (
+          <div
+            key={bubble.id}
+            className="bubble"
+            style={{
+              width: `${bubble.size}px`,
+              height: `${bubble.size}px`,
+              top: `${bubble.top}%`,
+              left: `${bubble.left}%`,
+              backgroundColor: bubble.color,
+              animationDuration: `${bubble.duration}s`,
+              animationDelay: `${bubble.delay}s`,
             }}
           />
         ))}

@@ -70,8 +70,8 @@
   }
 
   body {
-    @apply font-comic antialiased text-gray-200;
-    background: linear-gradient(135deg, #111827 0%, #1f2937 50%, #374151 100%);
+    @apply font-comic antialiased text-gray-800;
+    background: linear-gradient(135deg, #e0f7ff 0%, #ffffff 50%, #f0f9ff 100%);
     position: relative;
     overflow-x: hidden;
   }
@@ -83,31 +83,17 @@
     left: 0;
     right: 0;
     bottom: 0;
-    background-image: url('https://images.unsplash.com/photo-1608889175123-8ee362201f81?w=1200&auto=format&fit=crop&q=80');
+    background-image: url('https://images.unsplash.com/photo-1503676260728-1c00da094a0b?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1200&q=80');
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
-    opacity: 0.05;
+    opacity: 0.15;
     z-index: -1;
-  }
-
-  /* Card and input backgrounds */
-  .bg-white {
-    @apply bg-gray-800;
-  }
-
-  /* Text colors */
-  .text-gray-500 {
-    @apply text-gray-400;
-  }
-
-  .text-gray-700 {
-    @apply text-gray-300;
   }
 
   /* Button and interactive elements */
   .bg-lightGray {
-    @apply bg-gray-700;
+    @apply bg-gray-100;
   }
 }
 
@@ -172,11 +158,35 @@
   background: rgba(255, 255, 255, 0.8);
   border-radius: 50%;
   animation: float linear infinite;
+  box-shadow: 0 0 20px rgba(173, 216, 230, 0.5);
 }
 
 @keyframes float {
   from { transform: translateX(-100%); }
   to { transform: translateX(100vw); }
+}
+
+/* Bubbles */
+.bubbles {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  z-index: -1;
+}
+
+.bubble {
+  position: absolute;
+  border-radius: 50%;
+  opacity: 0.6;
+  animation: rise ease-in infinite;
+  box-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+}
+
+@keyframes rise {
+  0% { transform: translateY(100vh) scale(0.8); opacity: 0.2; }
+  50% { opacity: 0.6; }
+  100% { transform: translateY(-100px) scale(1.2); opacity: 0; }
 }
 
 /* Star twinkling animation for history page */
