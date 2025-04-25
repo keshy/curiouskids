@@ -1,4 +1,15 @@
-import { users, type User, type InsertUser, type Question, type InsertQuestion } from "@shared/schema";
+import { 
+  users, 
+  type User, 
+  type InsertUser, 
+  type Question, 
+  type InsertQuestion, 
+  type Badge,
+  type InsertBadge,
+  type UserBadge,
+  type Achievement,
+  type InsertAchievement
+} from "@shared/schema";
 
 // modify the interface with any CRUD methods
 // you might need

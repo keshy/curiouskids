@@ -2,6 +2,59 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Celebration particles animation for badge rewards */
+@keyframes particle-animation {
+  0% {
+    opacity: 1;
+    transform: translate(0, 0);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(var(--x), var(--y));
+  }
+}
+
+.celebration-particles {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+}
+
+.celebration-particles::before {
+  content: '';
+  position: absolute;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  box-shadow: 
+    0 0 0 3px gold,
+    10px 10px 0 2px hotpink,
+    -10px 10px 0 2px cyan,
+    10px -10px 0 2px lime,
+    -10px -10px 0 2px orange,
+    20px 0 0 2px violet,
+    -20px 0 0 2px yellow,
+    0 20px 0 2px aqua,
+    0 -20px 0 2px magenta;
+  animation: particle-animation 1s ease-out forwards;
+}
+
+/* Random offsets for each particle */
+.celebration-particles::before {
+  --x: calc(random(60) * 1px);
+  --y: calc(random(60) * 1px);
+}
+
+/* Animation for badge earned toast */
+@keyframes badgeEarned {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.1); }
+}
+
+.badge-earned-animation {
+  animation: badgeEarned 0.5s ease-in-out 2;
+}
+
 :root {
   --background: 0 0% 100%;
   --foreground: 20 14.3% 4.1%;
