@@ -27,7 +27,7 @@ export default function QuestionSuggestions({
 
   return (
     <div className="mb-8">
-      <h3 className="text-xl font-bold text-center mb-4 text-gray-700">Try asking...</h3>
+      <h3 className="text-xl font-bold text-center mb-4 text-primary">Try asking...</h3>
       <div className="flex flex-wrap justify-center gap-3">
         {displaySuggestions.map((suggestion, index) => (
           <button
