@@ -142,19 +142,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const userId = (req as any).session?.userId || null;
       
       if (!userId) {
-        return res.status(401).json({ message: "Unauthorized" });
+        // Instead of returning 401, return empty array for unauthenticated users
+        return res.json([]);
       }
       
       // Import badge controller
       const { getUserBadges } = require('./badges');
       const badges = await getUserBadges(userId);
       
-      return res.json(badges);
+      return res.json(badges || []);
     } catch (error) {
       console.error("Error fetching badges:", error);
-      return res.status(500).json({ 
-        message: "Failed to fetch badges" 
-      });
+      // Return empty array on error too
+      return res.json([]);
     }
   });
 

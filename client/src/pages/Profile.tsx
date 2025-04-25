@@ -32,10 +32,11 @@ export default function Profile() {
       try {
         setLoading(true);
         const data = await apiRequest<Badge[]>(`/api/badges`);
-        setBadges(data);
+        setBadges(data || []);
       } catch (err) {
         console.error("Error fetching badges:", err);
-        setError("Failed to load your badges.");
+        // Don't set error, just treat as empty badges
+        setBadges([]);
       } finally {
         setLoading(false);
       }
