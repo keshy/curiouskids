@@ -27,6 +27,7 @@ export default function AskMeBuddy() {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [response, setResponse] = useState<Response | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [question, setQuestion] = useState("");
   const [settings, setSettings] = useState<Settings>({
     textToSpeech: true,
     showImages: true,
@@ -57,9 +58,10 @@ export default function AskMeBuddy() {
     setSpeechBubbleText("Great question! Let me think...");
   };
 
-  const handleQuestion = async (question: string) => {
-    if (!question.trim()) return;
+  const handleQuestion = async (newQuestion: string) => {
+    if (!newQuestion.trim()) return;
     
+    setQuestion(newQuestion);
     setIsLoading(true);
     setResponse(null); // Clear previous response
     setMascotState("thinking");
@@ -157,7 +159,7 @@ export default function AskMeBuddy() {
           onSubmitQuestion={handleQuestion}
           isListening={mascotState === "listening"}
           isLoading={isLoading}
-          currentQuestion={response?.text ? undefined : mascotState === "thinking" ? "thinking..." : undefined}
+          currentQuestion={isLoading ? question : undefined}
         />
         
         <ResponseDisplay 
