@@ -178,3 +178,10 @@
   from { transform: translateX(-100%); }
   to { transform: translateX(100vw); }
 }
+
+/* Star twinkling animation for history page */
+@keyframes twinkle {
+  0% { opacity: 0.2; transform: scale(0.8) rotate(0deg); }
+  50% { opacity: 1; transform: scale(1.2) rotate(15deg); }
+  100% { opacity: 0.2; transform: scale(0.8) rotate(0deg); }
+}

@@ -11,8 +11,8 @@ export default function Header({ onOpenSettings }: HeaderProps) {
         <h1 className="text-4xl md:text-5xl font-bold text-primary mb-2">OptiBrain Prime</h1>
         <div className="flex items-center space-x-2">
           <Link href="/history">
-            <a
-              className="bg-white rounded-full p-3 shadow-md hover:bg-lightGray transition-colors button-press"
+            <div
+              className="bg-white rounded-full p-3 shadow-md hover:bg-lightGray transition-colors button-press cursor-pointer"
               aria-label="View History"
               title="View History"
             >
@@ -30,7 +30,7 @@ export default function Header({ onOpenSettings }: HeaderProps) {
                   d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" 
                 />
               </svg>
-            </a>
+            </div>
           </Link>
           <button 
             onClick={onOpenSettings}

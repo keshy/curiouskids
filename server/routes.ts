@@ -85,7 +85,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Get recent questions
   app.get("/api/questions/recent", async (req, res) => {
     try {
-      const questions = await storage.getRecentQuestions(10);
+      const questions = await storage.getRecentQuestions(20);
       return res.json(questions);
     } catch (error) {
       console.error("Error fetching recent questions:", error);
