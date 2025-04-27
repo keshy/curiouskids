@@ -11,7 +11,7 @@ export default function History() {
   const { user } = useAuth();
   const [_, navigate] = useLocation();
 
-  // Redirect to login if user is not authenticated
+  // Redirect to login if no user
   useEffect(() => {
     if (!user) {
       navigate("/login");
@@ -29,13 +29,9 @@ export default function History() {
         setLoading(true);
         let data: Question[] = [];
         
-        if (user.isGuest) {
-          // Fetch recent questions for guest users 
-          data = await apiRequest<Question[]>(`/api/questions/recent`);
-        } else {
-          // Fetch user-specific questions for logged-in users
-          data = await apiRequest<Question[]>(`/api/questions/user`);
-        }
+        // Always use /api/questions/recent for both guest and logged-in users
+        // since we don't have proper session management on the server yet
+        data = await apiRequest<Question[]>(`/api/questions/recent`);
         
         setQuestions(data);
       } catch (err) {
