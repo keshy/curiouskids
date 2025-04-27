@@ -45,15 +45,36 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       // Validate the request body
       const validatedData = askRequestSchema.parse(req.body);
-      const { question, contentFilter, generateImage, generateAudio, guestId } = validatedData;
+      const { 
+        question, 
+        contentFilter, 
+        generateImage, 
+        generateAudio, 
+        guestId,
+        firebaseId 
+      } = validatedData;
       
       // Get user ID - authenticated users have numeric IDs in the session
       let userId = (req as any).session?.userId || null;
       let guestUserId = null;
       
+      // If Firebase ID is provided and no session userId exists, look up the user by Firebase ID
+      if (!userId && firebaseId) {
+        console.log("Looking up user by Firebase ID:", firebaseId);
+        try {
+          const user = await storage.getUserByFirebaseId(firebaseId);
+          if (user) {
+            userId = user.id;
+            console.log("Found user ID:", userId, "from Firebase ID");
+          }
+        } catch (err) {
+          console.error("Error looking up user by Firebase ID:", err);
+        }
+      }
+      
       // Handle guest users (they have string IDs like "guest_abc123")
-      if (!userId && validatedData.guestId) {
-        guestUserId = validatedData.guestId;
+      if (!userId && guestId) {
+        guestUserId = guestId;
         console.log("Using guest ID for question:", guestUserId);
       }
       
@@ -200,8 +221,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Get user badges
   app.get("/api/badges", async (req, res) => {
     try {
-      // Get user ID from session
-      const userId = (req as any).session?.userId || null;
+      // Try to get Firebase ID from query parameter
+      const firebaseId = req.query.firebaseId as string;
+      let userId = null;
+      
+      // If Firebase ID is provided, look up the user
+      if (firebaseId) {
+        console.log("Looking up user by Firebase ID for badges:", firebaseId);
+        try {
+          const user = await storage.getUserByFirebaseId(firebaseId);
+          if (user) {
+            userId = user.id;
+            console.log("Found user ID for badges:", userId);
+          }
+        } catch (err) {
+          console.error("Error looking up user by Firebase ID:", err);
+        }
+      }
+      
+      // If no Firebase ID or no user found, check session
+      if (!userId) {
+        userId = (req as any).session?.userId || null;
+      }
       
       if (!userId) {
         // Instead of returning 401, return empty array for unauthenticated users
