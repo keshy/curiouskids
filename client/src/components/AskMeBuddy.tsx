@@ -6,6 +6,7 @@ import ResponseDisplay from "./ResponseDisplay";
 import QuestionSuggestions from "./QuestionSuggestions";
 import ParentSettingsModal from "./ParentSettingsModal";
 import BadgeNotification from "./BadgeNotification";
+import { useAuth } from "@/contexts/AuthContext";
 import type { Badge, Achievement } from "@shared/schema";
 
 export type MascotState = "idle" | "listening" | "thinking" | "speaking";
@@ -29,6 +30,7 @@ export type Settings = {
 };
 
 export default function AskMeBuddy() {
+  const { user } = useAuth(); // Get the current user
   const [mascotState, setMascotState] = useState<MascotState>("idle");
   const [speechBubbleText, setSpeechBubbleText] = useState<string>("Hi there! What would you like to know?");
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
@@ -78,6 +80,9 @@ export default function AskMeBuddy() {
     setSpeechBubbleText("Great question! Let me think...");
 
     try {
+      // Include the guest user ID in the request if user is guest
+      const userData = user?.isGuest ? { guestId: user.id } : {};
+      
       const res = await fetch('/api/ask', {
         method: 'POST',
         headers: {
@@ -87,7 +92,8 @@ export default function AskMeBuddy() {
           question: newQuestion, // Use the newQuestion parameter, not the state
           contentFilter: settings.contentFilter,
           generateImage: settings.showImages,
-          generateAudio: settings.textToSpeech
+          generateAudio: settings.textToSpeech,
+          ...userData // Spread in the user data (will be empty if not a guest)
         }),
       });
 

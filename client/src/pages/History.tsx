@@ -29,9 +29,14 @@ export default function History() {
         setLoading(true);
         let data: Question[] = [];
         
-        // Always use /api/questions/recent for both guest and logged-in users
-        // since we don't have proper session management on the server yet
-        data = await apiRequest<Question[]>(`/api/questions/recent`);
+        // For guest users, we need to pass their guest ID to identify their questions
+        if (user.isGuest) {
+          // Send the guest ID as a query parameter
+          data = await apiRequest<Question[]>(`/api/questions/guest?guestId=${encodeURIComponent(user.id)}`);
+        } else {
+          // For logged-in users, use the user-specific endpoint
+          data = await apiRequest<Question[]>(`/api/questions/user`);
+        }
         
         setQuestions(data);
       } catch (err) {

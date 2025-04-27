@@ -35,7 +35,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     question: z.string().min(1, "Question is required"),
     contentFilter: z.enum(["strict", "moderate", "standard"]).default("strict"),
     generateImage: z.boolean().default(true),
-    generateAudio: z.boolean().default(true)
+    generateAudio: z.boolean().default(true),
+    guestId: z.string().optional() // Optional guest user ID
   });
 
   // API endpoint to ask a question
@@ -43,10 +44,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       // Validate the request body
       const validatedData = askRequestSchema.parse(req.body);
-      const { question, contentFilter, generateImage, generateAudio } = validatedData;
+      const { question, contentFilter, generateImage, generateAudio, guestId } = validatedData;
       
-      // Get user ID if authenticated (use session or token)
-      const userId = (req as any).session?.userId || null;
+      // Get user ID - prioritize authenticated user ID, fall back to guest ID
+      let userId = (req as any).session?.userId || null;
+      
+      // If we have a guestId from the request and no authenticated userId, use the guestId as userId
+      if (!userId && guestId) {
+        userId = guestId;
+      }
       
       // Process the question through OpenAI
       const answer = await processQuestion(question, contentFilter, generateImage, generateAudio);
@@ -101,15 +107,44 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Get recent questions
+  // Get recent questions - this is now just for system-wide questions with no user
   app.get("/api/questions/recent", async (req, res) => {
     try {
-      const questions = await storage.getRecentQuestions(20);
-      return res.json(questions);
+      // Get recent questions, but filter to only show public questions (userId = null)
+      const allQuestions = await storage.getRecentQuestions(50); // Fetch more than needed to allow for filtering
+      const publicQuestions = allQuestions.filter(q => q.userId === null);
+      return res.json(publicQuestions.slice(0, 20)); // Return at most 20
     } catch (error) {
       console.error("Error fetching recent questions:", error);
       return res.status(500).json({ 
         message: "Failed to fetch recent questions" 
+      });
+    }
+  });
+  
+  // Get questions for guest users by their guest ID (stored in the guestId parameter)
+  app.get("/api/questions/guest", async (req, res) => {
+    try {
+      const guestId = req.query.guestId as string;
+      
+      if (!guestId) {
+        return res.status(400).json({ message: "Guest ID is required" });
+      }
+      
+      // Fetch all questions and filter by the guestId field
+      // Since we're storing the guestId in the userId field as a string, we need to do a string comparison
+      const allQuestions = await storage.getRecentQuestions(50);
+      const guestQuestions = allQuestions.filter(q => {
+        // Since userId might be a number in the database but guestId is a string,
+        // we need to convert both to strings for comparison
+        return q.userId?.toString() === guestId;
+      });
+      
+      return res.json(guestQuestions.slice(0, 20)); // Return at most 20
+    } catch (error) {
+      console.error("Error fetching guest questions:", error);
+      return res.status(500).json({ 
+        message: "Failed to fetch your questions" 
       });
     }
   });
