@@ -31,7 +31,8 @@ export type User = typeof users.$inferSelect;
 // Define the questions table for tracking questions
 export const questions = pgTable("questions", {
   id: serial("id").primaryKey(),
-  userId: integer("user_id").references(() => users.id),  // Added user reference
+  userId: integer("user_id").references(() => users.id),  // For authenticated users
+  guestId: text("guest_id"),  // For guest users
   question: text("question").notNull(),
   answer: text("answer").notNull(),
   imageUrl: text("image_url"),
@@ -41,6 +42,7 @@ export const questions = pgTable("questions", {
 
 export const insertQuestionSchema = createInsertSchema(questions).pick({
   userId: true,
+  guestId: true,
   question: true,
   answer: true,
   imageUrl: true,
