@@ -42,16 +42,54 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  // Authenticate with backend
+  const authenticateWithBackend = async (firebaseUser: User) => {
+    try {
+      // Send Firebase user data to our backend
+      const response = await fetch('/api/auth/firebase', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          firebaseId: firebaseUser.uid,
+          email: firebaseUser.email,
+          displayName: firebaseUser.displayName,
+          photoUrl: firebaseUser.photoURL,
+        }),
+        credentials: 'include', // Important for session cookies
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to authenticate with backend');
+      }
+      
+      console.log('Successfully authenticated with backend');
+      
+      // Set user state
+      setUser({
+        isGuest: false,
+        firebaseUser,
+      });
+    } catch (error) {
+      console.error('Backend authentication error:', error);
+      setError('Failed to authenticate with backend server');
+    }
+  };
+
   useEffect(() => {
     // Subscribe to auth state changes
-    const unsubscribe = subscribeToAuthChanges((firebaseUser) => {
+    const unsubscribe = subscribeToAuthChanges(async (firebaseUser) => {
       setLoading(true);
+      setError(null);
+      
       if (firebaseUser) {
-        // User is signed in with Firebase
-        setUser({
-          isGuest: false,
-          firebaseUser,
-        });
+        // User is signed in with Firebase, authenticate with backend
+        try {
+          await authenticateWithBackend(firebaseUser);
+        } catch (error) {
+          console.error('Authentication error:', error);
+        }
       } else {
         // Check if there's a saved guest user in localStorage
         const savedGuestUser = localStorage.getItem('guestUser');
@@ -61,6 +99,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           setUser(null);
         }
       }
+      
       setLoading(false);
     });
 
