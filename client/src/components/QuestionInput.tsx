@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import useSpeechRecognition from "@/hooks/useSpeechRecognition";
 
 interface QuestionInputProps {
@@ -81,6 +81,22 @@ export default function QuestionInput({
       </h2>
       
       <div className="flex flex-col space-y-4">
+        {/* Error message */}
+        {showError && error && (
+          <div className="text-center p-4 bg-red-50 rounded-xl border-2 border-red-300 mb-4">
+            <p className="text-red-700">
+              <i className="ri-error-warning-line mr-2 text-xl"></i>
+              {error}
+            </p>
+            <button 
+              onClick={() => setShowError(false)}
+              className="text-sm text-red-600 hover:text-red-800 underline mt-2"
+            >
+              Dismiss
+            </button>
+          </div>
+        )}
+      
         {isLoading && currentQuestion && (
           <div className="text-center p-4 bg-gradient-to-r from-yellow-100 to-orange-100 rounded-xl animate-pulse border-2 border-yellow-300">
             <p className="text-lg text-gray-700 mb-2">"{currentQuestion}"</p>
@@ -149,6 +165,14 @@ export default function QuestionInput({
             {transcript && (
               <p className="my-2 text-lg text-gray-600 italic">"{transcript}"</p>
             )}
+            
+            {/* Show error during recording if it occurs */}
+            {error && (
+              <div className="my-2 p-2 bg-red-50 border border-red-200 rounded-lg">
+                <p className="text-sm text-red-600">{error}</p>
+              </div>
+            )}
+            
             <button 
               onClick={handleStopRecording}
               className="button-press mt-2 bg-red-500 hover:bg-red-600 text-white text-lg font-bold py-2 px-4 rounded-full shadow-md transition-colors"
