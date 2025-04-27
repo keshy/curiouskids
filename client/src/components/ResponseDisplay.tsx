@@ -8,13 +8,15 @@ interface ResponseDisplayProps {
   isLoading: boolean;
   textToSpeech: boolean;
   onSpeakingEnd: () => void;
+  isGuestUser?: boolean; // Flag to check if user is a guest
 }
 
 export default function ResponseDisplay({ 
   response, 
   isLoading,
   textToSpeech,
-  onSpeakingEnd
+  onSpeakingEnd,
+  isGuestUser = false
 }: ResponseDisplayProps) {
   const [isPlaying, setIsPlaying] = useState(false);
   const [audioProgress, setAudioProgress] = useState(0);

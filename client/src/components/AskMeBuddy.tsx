@@ -238,6 +238,7 @@ export default function AskMeBuddy() {
           isListening={mascotState === "listening"}
           isLoading={isLoading}
           currentQuestion={isLoading ? question : undefined}
+          isGuestUser={user?.isGuest || false}
         />
         
         <ResponseDisplay 
