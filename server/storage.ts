@@ -8,11 +8,15 @@ import {
   type InsertBadge,
   type UserBadge,
   type Achievement,
-  type InsertAchievement
+  type InsertAchievement,
+  questions as questionsTable, 
+  users as usersTable,
+  badges as badgesTable,
+  userBadges as userBadgesTable,
+  achievements as achievementsTable
 } from "@shared/schema";
-
-// modify the interface with any CRUD methods
-// you might need
+import { db } from "./db";
+import { eq, and, desc, asc } from "drizzle-orm";
 
 export interface IStorage {
   // User management
@@ -43,195 +47,98 @@ export interface IStorage {
   updateAchievementProgress(userId: number, name: string, progress: number): Promise<Achievement>;
 }
 
-export class MemStorage implements IStorage {
-  private users: Map<number, User>;
-  private questions: Map<number, Question>;
-  private badges: Map<number, Badge>;
-  private userBadges: Map<string, UserBadge>; // Composite key: userId-badgeId
-  private achievements: Map<string, Achievement>; // Composite key: userId-name
-  
-  userCurrentId: number;
-  questionCurrentId: number;
-  badgeCurrentId: number;
-  achievementCurrentId: number;
-
-  constructor() {
-    this.users = new Map();
-    this.questions = new Map();
-    this.badges = new Map();
-    this.userBadges = new Map();
-    this.achievements = new Map();
-    
-    this.userCurrentId = 1;
-    this.questionCurrentId = 1;
-    this.badgeCurrentId = 1;
-    this.achievementCurrentId = 1;
-    
-    // Add some starter badges
-    this.initializeDefaultBadges();
-  }
-
-  private initializeDefaultBadges() {
-    // Science badges
-    this.createBadge({
-      name: "Science Explorer",
-      description: "Asked your first science question",
-      imageUrl: "/badges/science-explorer.svg",
-      category: "science",
-      rarity: "common",
-      unlockCriteria: JSON.stringify({ type: "category_first", category: "science" })
-    });
-    
-    this.createBadge({
-      name: "Math Whiz",
-      description: "Asked your first math question",
-      imageUrl: "/badges/math-whiz.svg",
-      category: "math",
-      rarity: "common",
-      unlockCriteria: JSON.stringify({ type: "category_first", category: "math" })
-    });
-    
-    this.createBadge({
-      name: "Reading Star",
-      description: "Asked your first question about reading or books",
-      imageUrl: "/badges/reading-star.svg",
-      category: "reading",
-      rarity: "common",
-      unlockCriteria: JSON.stringify({ type: "category_first", category: "reading" })
-    });
-    
-    // Milestone badges
-    this.createBadge({
-      name: "Curious Mind",
-      description: "Asked 5 questions",
-      imageUrl: "/badges/curious-mind.svg",
-      category: "milestone",
-      rarity: "common",
-      unlockCriteria: JSON.stringify({ type: "question_count", count: 5 })
-    });
-    
-    this.createBadge({
-      name: "Knowledge Seeker",
-      description: "Asked 10 questions",
-      imageUrl: "/badges/knowledge-seeker.svg",
-      category: "milestone",
-      rarity: "uncommon",
-      unlockCriteria: JSON.stringify({ type: "question_count", count: 10 })
-    });
-    
-    this.createBadge({
-      name: "Super Learner",
-      description: "Asked questions from 3 different categories",
-      imageUrl: "/badges/super-learner.svg",
-      category: "special",
-      rarity: "rare",
-      unlockCriteria: JSON.stringify({ type: "category_diversity", count: 3 })
-    });
-  }
-
+export class DatabaseStorage implements IStorage {
   // User management
   async getUser(id: number): Promise<User | undefined> {
-    return this.users.get(id);
+    const [user] = await db.select().from(usersTable).where(eq(usersTable.id, id));
+    return user || undefined;
   }
 
   async getUserByUsername(username: string): Promise<User | undefined> {
-    return Array.from(this.users.values()).find(
-      (user) => user.username === username,
-    );
+    const [user] = await db.select().from(usersTable).where(eq(usersTable.username, username));
+    return user || undefined;
   }
 
   async createUser(insertUser: InsertUser): Promise<User> {
-    const id = this.userCurrentId++;
-    const user: User = { 
-      id,
-      username: insertUser.username,
-      password: insertUser.password || null,
-      firebaseId: insertUser.firebaseId || null,
-      email: insertUser.email || null,
-      displayName: insertUser.displayName || null,
-      photoURL: insertUser.photoURL || null,
-      isGuest: insertUser.isGuest || false,
-      createdAt: new Date()
-    };
-    this.users.set(id, user);
+    const [user] = await db
+      .insert(usersTable)
+      .values(insertUser)
+      .returning();
     return user;
   }
   
   // Question history
   async createQuestion(insertQuestion: InsertQuestion): Promise<Question> {
-    const id = this.questionCurrentId++;
-    const question: Question = { 
-      id,
-      userId: insertQuestion.userId || null,
-      question: insertQuestion.question,
-      answer: insertQuestion.answer,
-      imageUrl: insertQuestion.imageUrl || null,
-      audioUrl: insertQuestion.audioUrl || null,
-      createdAt: new Date()
-    };
-    this.questions.set(id, question);
+    const [question] = await db
+      .insert(questionsTable)
+      .values(insertQuestion)
+      .returning();
     return question;
   }
   
   async getRecentQuestions(limit: number): Promise<Question[]> {
-    // Get all questions and sort by createdAt in descending order
-    const allQuestions = Array.from(this.questions.values());
-    const sortedQuestions = allQuestions.sort((a, b) => {
-      return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
-    });
-    
-    // Return the specified number of most recent questions
-    return sortedQuestions.slice(0, limit);
+    return await db
+      .select()
+      .from(questionsTable)
+      .orderBy(desc(questionsTable.createdAt))
+      .limit(limit);
   }
   
   async getUserQuestions(userId: number, limit: number): Promise<Question[]> {
-    // Get all questions by this user and sort by createdAt in descending order
-    const userQuestions = Array.from(this.questions.values())
-      .filter(question => question.userId === userId)
-      .sort((a, b) => {
-        return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
-      });
-    
-    // Return the specified number of most recent questions
-    return userQuestions.slice(0, limit);
+    return await db
+      .select()
+      .from(questionsTable)
+      .where(eq(questionsTable.userId, userId))
+      .orderBy(desc(questionsTable.createdAt))
+      .limit(limit);
   }
   
   // Badge management
   async getBadges(): Promise<Badge[]> {
-    return Array.from(this.badges.values());
+    return await db.select().from(badgesTable);
   }
   
   async getBadgeById(id: number): Promise<Badge | undefined> {
-    return this.badges.get(id);
+    const [badge] = await db.select().from(badgesTable).where(eq(badgesTable.id, id));
+    return badge || undefined;
   }
   
   async getBadgesByCategory(category: string): Promise<Badge[]> {
-    return Array.from(this.badges.values())
-      .filter(badge => badge.category === category);
+    return await db
+      .select()
+      .from(badgesTable)
+      .where(eq(badgesTable.category, category));
   }
   
   async createBadge(badge: InsertBadge): Promise<Badge> {
-    const id = this.badgeCurrentId++;
-    const now = new Date();
-    const newBadge: Badge = {
-      ...badge,
-      id,
-      rarity: badge.rarity || "common", // Ensure rarity is never undefined
-      createdAt: now
-    };
-    this.badges.set(id, newBadge);
+    const [newBadge] = await db
+      .insert(badgesTable)
+      .values(badge)
+      .returning();
     return newBadge;
   }
   
   // User badges (rewards)
   async getUserBadges(userId: number): Promise<(UserBadge & {badge: Badge})[]> {
-    // Find all user badges for this user
-    const userBadgeEntries = Array.from(this.userBadges.values())
-      .filter(userBadge => userBadge.userId === userId);
+    // We need to fetch user badges and join with badge data
+    const userBadgesWithBadges = await db
+      .select({
+        userId: userBadgesTable.userId,
+        badgeId: userBadgesTable.badgeId,
+        earnedAt: userBadgesTable.earnedAt,
+        displayOrder: userBadgesTable.displayOrder,
+        favorite: userBadgesTable.favorite
+      })
+      .from(userBadgesTable)
+      .where(eq(userBadgesTable.userId, userId));
     
-    // Join with badge data
-    return userBadgeEntries.map(userBadge => {
-      const badge = this.badges.get(userBadge.badgeId)!;
+    // Fetch all badges in one go
+    const badges = await db.select().from(badgesTable);
+    const badgesMap = new Map(badges.map(badge => [badge.id, badge]));
+    
+    // Join the data manually to ensure proper typing
+    return userBadgesWithBadges.map(userBadge => {
+      const badge = badgesMap.get(userBadge.badgeId)!;
       return {
         ...userBadge,
         badge
@@ -240,25 +147,38 @@ export class MemStorage implements IStorage {
   }
   
   async awardBadgeToUser(userId: number, badgeId: number): Promise<UserBadge> {
-    const key = `${userId}-${badgeId}`;
-    
-    // Check if user already has this badge
-    if (this.userBadges.has(key)) {
-      return this.userBadges.get(key)!;
+    try {
+      // Check if user already has this badge
+      const [existingBadge] = await db
+        .select()
+        .from(userBadgesTable)
+        .where(
+          and(
+            eq(userBadgesTable.userId, userId),
+            eq(userBadgesTable.badgeId, badgeId)
+          )
+        );
+      
+      if (existingBadge) {
+        return existingBadge;
+      }
+      
+      // Award the badge
+      const [userBadge] = await db
+        .insert(userBadgesTable)
+        .values({
+          userId,
+          badgeId,
+          displayOrder: 0,
+          favorite: false
+        })
+        .returning();
+      
+      return userBadge;
+    } catch (error) {
+      console.error("Error awarding badge:", error);
+      throw error;
     }
-    
-    // Award the badge
-    const now = new Date();
-    const userBadge: UserBadge = {
-      userId,
-      badgeId,
-      earnedAt: now,
-      displayOrder: 0,
-      favorite: false
-    };
-    
-    this.userBadges.set(key, userBadge);
-    return userBadge;
   }
   
   async updateUserBadge(
@@ -266,83 +186,189 @@ export class MemStorage implements IStorage {
     badgeId: number, 
     updates: Partial<Omit<UserBadge, 'userId' | 'badgeId'>>
   ): Promise<UserBadge> {
-    const key = `${userId}-${badgeId}`;
+    // Check if badge exists for user
+    const [existingBadge] = await db
+      .select()
+      .from(userBadgesTable)
+      .where(
+        and(
+          eq(userBadgesTable.userId, userId),
+          eq(userBadgesTable.badgeId, badgeId)
+        )
+      );
     
-    if (!this.userBadges.has(key)) {
+    if (!existingBadge) {
       throw new Error(`User ${userId} does not have badge ${badgeId}`);
     }
     
-    const userBadge = this.userBadges.get(key)!;
-    const updatedBadge = { ...userBadge, ...updates };
-    this.userBadges.set(key, updatedBadge);
+    // Update the user badge
+    const [updatedBadge] = await db
+      .update(userBadgesTable)
+      .set(updates)
+      .where(
+        and(
+          eq(userBadgesTable.userId, userId),
+          eq(userBadgesTable.badgeId, badgeId)
+        )
+      )
+      .returning();
     
     return updatedBadge;
   }
   
   // Achievements
   async getUserAchievements(userId: number): Promise<Achievement[]> {
-    return Array.from(this.achievements.values())
-      .filter(achievement => achievement.userId === userId);
+    return await db
+      .select()
+      .from(achievementsTable)
+      .where(eq(achievementsTable.userId, userId));
   }
   
   async getAchievement(userId: number, name: string): Promise<Achievement | undefined> {
-    const key = `${userId}-${name}`;
-    return this.achievements.get(key);
+    const [achievement] = await db
+      .select()
+      .from(achievementsTable)
+      .where(
+        and(
+          eq(achievementsTable.userId, userId),
+          eq(achievementsTable.name, name)
+        )
+      );
+    
+    return achievement || undefined;
   }
   
   async createOrUpdateAchievement(achievement: InsertAchievement): Promise<Achievement> {
-    const key = `${achievement.userId}-${achievement.name}`;
+    // Check if achievement already exists
+    const existingAchievement = await this.getAchievement(achievement.userId, achievement.name);
     
-    // If it exists, update it
-    if (this.achievements.has(key)) {
-      const existing = this.achievements.get(key)!;
-      const updated: Achievement = {
-        ...existing,
-        ...achievement,
-        progress: achievement.progress || 0, // Ensure progress is a number
-        completed: achievement.completed || false, // Ensure completed is a boolean
-        updatedAt: new Date()
-      };
+    if (existingAchievement) {
+      // Update existing achievement
+      const [updated] = await db
+        .update(achievementsTable)
+        .set({
+          ...achievement,
+          updatedAt: new Date()
+        })
+        .where(eq(achievementsTable.id, existingAchievement.id))
+        .returning();
       
-      this.achievements.set(key, updated);
       return updated;
     }
     
-    // Otherwise create it
-    const id = this.achievementCurrentId++;
-    const now = new Date();
-    const newAchievement: Achievement = {
-      ...achievement,
-      id,
-      progress: achievement.progress || 0, // Ensure progress is a number
-      completed: achievement.completed || false, // Ensure completed is a boolean
-      updatedAt: now
-    };
+    // Create new achievement
+    const [newAchievement] = await db
+      .insert(achievementsTable)
+      .values(achievement)
+      .returning();
     
-    this.achievements.set(key, newAchievement);
     return newAchievement;
   }
   
   async updateAchievementProgress(userId: number, name: string, progress: number): Promise<Achievement> {
-    const key = `${userId}-${name}`;
+    // Get the achievement
+    const existingAchievement = await this.getAchievement(userId, name);
     
-    if (!this.achievements.has(key)) {
+    if (!existingAchievement) {
       throw new Error(`Achievement ${name} for user ${userId} not found`);
     }
     
-    const achievement = this.achievements.get(key)!;
-    const completed = progress >= achievement.goal;
+    // Determine if completed
+    const completed = progress >= existingAchievement.goal;
     
-    const updated: Achievement = {
-      ...achievement,
-      progress,
-      completed,
-      updatedAt: new Date()
-    };
+    // Update progress
+    const [updated] = await db
+      .update(achievementsTable)
+      .set({
+        progress,
+        completed,
+        updatedAt: new Date()
+      })
+      .where(eq(achievementsTable.id, existingAchievement.id))
+      .returning();
     
-    this.achievements.set(key, updated);
     return updated;
   }
 }
 
-export const storage = new MemStorage();
+// Define default badges to initialize the database
+async function initializeDefaultBadges(storage: DatabaseStorage) {
+  console.log("Checking for default badges...");
+  const existingBadges = await storage.getBadges();
+  
+  // If we already have badges, no need to create more
+  if (existingBadges.length > 0) {
+    console.log(`Found ${existingBadges.length} existing badges, skipping initialization.`);
+    return;
+  }
+  
+  console.log("Initializing default badges...");
+  
+  // Create science badge
+  await storage.createBadge({
+    name: "Science Explorer",
+    description: "Asked your first science question",
+    imageUrl: "/badges/science-explorer.svg",
+    category: "science",
+    rarity: "common",
+    unlockCriteria: JSON.stringify({ type: "category_first", category: "science" })
+  });
+  
+  // Create math badge
+  await storage.createBadge({
+    name: "Math Whiz",
+    description: "Asked your first math question",
+    imageUrl: "/badges/math-whiz.svg",
+    category: "math",
+    rarity: "common",
+    unlockCriteria: JSON.stringify({ type: "category_first", category: "math" })
+  });
+  
+  // Create reading badge
+  await storage.createBadge({
+    name: "Reading Star",
+    description: "Asked your first question about reading or books",
+    imageUrl: "/badges/reading-star.svg",
+    category: "reading",
+    rarity: "common",
+    unlockCriteria: JSON.stringify({ type: "category_first", category: "reading" })
+  });
+  
+  // Create milestone badges
+  await storage.createBadge({
+    name: "Curious Mind",
+    description: "Asked 5 questions",
+    imageUrl: "/badges/curious-mind.svg",
+    category: "milestone",
+    rarity: "common",
+    unlockCriteria: JSON.stringify({ type: "question_count", count: 5 })
+  });
+  
+  await storage.createBadge({
+    name: "Knowledge Seeker",
+    description: "Asked 10 questions",
+    imageUrl: "/badges/knowledge-seeker.svg",
+    category: "milestone",
+    rarity: "uncommon",
+    unlockCriteria: JSON.stringify({ type: "question_count", count: 10 })
+  });
+  
+  await storage.createBadge({
+    name: "Super Learner",
+    description: "Asked questions from 3 different categories",
+    imageUrl: "/badges/super-learner.svg",
+    category: "special",
+    rarity: "rare",
+    unlockCriteria: JSON.stringify({ type: "category_diversity", count: 3 })
+  });
+  
+  console.log("Default badges initialized successfully.");
+}
+
+// Use the database storage implementation
+export const storage = new DatabaseStorage();
+
+// Initialize default badges when the server starts
+initializeDefaultBadges(storage as DatabaseStorage).catch(error => {
+  console.error("Error initializing default badges:", error);
+});
