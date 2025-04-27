@@ -131,14 +131,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Guest ID is required" });
       }
       
+      console.log("Fetching questions for guest ID:", guestId);
+      
       // Fetch all questions and filter by the guestId field
       // Since we're storing the guestId in the userId field as a string, we need to do a string comparison
-      const allQuestions = await storage.getRecentQuestions(50);
+      const allQuestions = await storage.getRecentQuestions(100); // Fetch more to ensure we get user's questions
+      
+      // Log all questions to help with debugging
+      console.log("All questions:", JSON.stringify(allQuestions.map(q => ({ 
+        id: q.id, 
+        userId: q.userId,
+        question: q.question.substring(0, 20) + "..."
+      }))));
+      
       const guestQuestions = allQuestions.filter(q => {
-        // Since userId might be a number in the database but guestId is a string,
-        // we need to convert both to strings for comparison
-        return q.userId?.toString() === guestId;
+        // Compare as strings to handle any type mismatches
+        const questionUserId = q.userId !== null ? q.userId.toString() : null;
+        const matches = questionUserId === guestId;
+        
+        if (matches) {
+          console.log("Found matching question for guest:", q.id, q.question.substring(0, 20) + "...");
+        }
+        
+        return matches;
       });
+      
+      console.log(`Found ${guestQuestions.length} questions for guest ID ${guestId}`);
       
       return res.json(guestQuestions.slice(0, 20)); // Return at most 20
     } catch (error) {

@@ -17,7 +17,6 @@ export default function History() {
       navigate("/login");
       return;
     }
-    // We allow both guest users and logged-in users to view their history
   }, [user, navigate]);
 
   // Fetch user's questions on component mount
@@ -29,12 +28,12 @@ export default function History() {
         setLoading(true);
         let data: Question[] = [];
         
-        // For guest users, we need to pass their guest ID to identify their questions
         if (user.isGuest) {
-          // Send the guest ID as a query parameter
+          // Send the guest ID as a query parameter for guest users
+          console.log("Fetching guest questions with ID:", user.id);
           data = await apiRequest<Question[]>(`/api/questions/guest?guestId=${encodeURIComponent(user.id)}`);
         } else {
-          // For logged-in users, use the user-specific endpoint
+          // Use the user-specific endpoint for logged-in users
           data = await apiRequest<Question[]>(`/api/questions/user`);
         }
         
