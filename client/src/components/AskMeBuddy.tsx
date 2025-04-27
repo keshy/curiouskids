@@ -246,6 +246,7 @@ export default function AskMeBuddy() {
           isLoading={isLoading}
           textToSpeech={settings.textToSpeech}
           onSpeakingEnd={handleSpeakingEnd}
+          isGuestUser={user?.isGuest || false}
         />
         
         <QuestionSuggestions 

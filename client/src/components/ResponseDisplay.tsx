@@ -1,4 +1,5 @@
 import { useEffect, useState, useRef } from "react";
+import { Link } from "wouter";
 import { Response } from "./AskMeBuddy";
 import useAudioPlayer from "@/hooks/useAudioPlayer";
 import useSpeechSynthesis from "@/hooks/useSpeechSynthesis";
