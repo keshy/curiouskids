@@ -52,7 +52,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // If we have a guestId from the request and no authenticated userId, use the guestId as userId
       if (!userId && guestId) {
         userId = guestId;
+        console.log("Using guest ID as user ID for question:", guestId);
       }
+      
+      console.log("Question being saved with userId:", userId);
       
       // Process the question through OpenAI
       const answer = await processQuestion(question, contentFilter, generateImage, generateAudio);

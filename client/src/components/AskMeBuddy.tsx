@@ -82,6 +82,7 @@ export default function AskMeBuddy() {
     try {
       // Include the guest user ID in the request if user is guest
       const userData = user?.isGuest ? { guestId: user.id } : {};
+      console.log("User data for question:", userData, "User type:", user?.isGuest ? "Guest" : "Authenticated");
       
       const res = await fetch('/api/ask', {
         method: 'POST',

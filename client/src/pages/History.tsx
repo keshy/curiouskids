@@ -31,9 +31,11 @@ export default function History() {
         if (user.isGuest) {
           // Send the guest ID as a query parameter for guest users
           console.log("Fetching guest questions with ID:", user.id);
+          console.log("Guest user object:", user);
           data = await apiRequest<Question[]>(`/api/questions/guest?guestId=${encodeURIComponent(user.id)}`);
         } else {
           // Use the user-specific endpoint for logged-in users
+          console.log("Fetching questions for authenticated user");
           data = await apiRequest<Question[]>(`/api/questions/user`);
         }
         
