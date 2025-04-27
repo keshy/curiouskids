@@ -11,27 +11,32 @@ export default function History() {
   const { user } = useAuth();
   const [_, navigate] = useLocation();
 
-  // Redirect to login if user is not authenticated or is a guest
+  // Redirect to login if user is not authenticated
   useEffect(() => {
     if (!user) {
       navigate("/login");
       return;
     }
-    
-    if (user.isGuest) {
-      navigate("/");
-      return;
-    }
+    // We allow both guest users and logged-in users to view their history
   }, [user, navigate]);
 
   // Fetch user's questions on component mount
   useEffect(() => {
-    if (!user || user.isGuest) return; // Don't fetch if not logged in
+    if (!user) return; // Don't fetch if not logged in
     
-    const fetchUserQuestions = async () => {
+    const fetchQuestions = async () => {
       try {
         setLoading(true);
-        const data = await apiRequest<Question[]>(`/api/questions/user`);
+        let data: Question[] = [];
+        
+        if (user.isGuest) {
+          // Fetch recent questions for guest users 
+          data = await apiRequest<Question[]>(`/api/questions/recent`);
+        } else {
+          // Fetch user-specific questions for logged-in users
+          data = await apiRequest<Question[]>(`/api/questions/user`);
+        }
+        
         setQuestions(data);
       } catch (err) {
         console.error("Error fetching question history:", err);
@@ -41,7 +46,7 @@ export default function History() {
       }
     };
 
-    fetchUserQuestions();
+    fetchQuestions();
   }, [user]);
 
   // Format date string

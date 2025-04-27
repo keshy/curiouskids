@@ -1,5 +1,56 @@
 import { useState, useEffect, useCallback } from 'react';
 
+// Define types for the Web Speech API, which is not fully typed in TypeScript
+interface SpeechRecognitionEvent extends Event {
+  results: SpeechRecognitionResultList;
+  resultIndex: number;
+}
+
+interface SpeechRecognitionResultList {
+  [index: number]: SpeechRecognitionResult;
+  length: number;
+}
+
+interface SpeechRecognitionResult {
+  [index: number]: SpeechRecognitionAlternative;
+  isFinal: boolean;
+  length: number;
+}
+
+interface SpeechRecognitionAlternative {
+  transcript: string;
+  confidence: number;
+}
+
+interface SpeechRecognitionErrorEvent extends Event {
+  error: string;
+  message: string;
+}
+
+interface SpeechRecognitionConstructor {
+  new (): SpeechRecognition;
+}
+
+interface SpeechRecognition extends EventTarget {
+  continuous: boolean;
+  interimResults: boolean;
+  lang: string;
+  start(): void;
+  stop(): void;
+  abort(): void;
+  onresult: ((event: SpeechRecognitionEvent) => void) | null;
+  onerror: ((event: SpeechRecognitionErrorEvent) => void) | null;
+  onend: ((event: Event) => void) | null;
+}
+
+// Augment the Window interface to include Web Speech API properties
+declare global {
+  interface Window {
+    SpeechRecognition?: SpeechRecognitionConstructor;
+    webkitSpeechRecognition?: SpeechRecognitionConstructor;
+  }
+}
+
 interface SpeechRecognitionOptions {
   onResult?: (transcript: string) => void;
   continuous?: boolean;
@@ -21,7 +72,14 @@ export default function useSpeechRecognition({
     window.webkitSpeechRecognition;
 
   // Check if browser supports speech recognition
-  const isSupported = !!SpeechRecognition;
+  const isBrowserSupported = !!SpeechRecognition;
+  
+  // Check if this is likely a mobile device
+  const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+  
+  // Speech recognition is supported only if the browser supports it and we're not on mobile
+  // (mobile speech recognition is inconsistent across browsers)
+  const isSupported = isBrowserSupported && !isMobile;
 
   // Initialize the recognition instance
   let recognitionInstance: any = null;
@@ -98,6 +156,8 @@ export default function useSpeechRecognition({
     listening,
     error,
     isSupported,
+    isMobile,
+    isBrowserSupported,
     startListening,
     stopListening,
   };
