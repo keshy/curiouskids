@@ -102,9 +102,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Check if user earned any badges from this question
       let earnedBadge = null;
       if (userId) {
-        // Import badge controller
-        const { checkAndAwardBadges } = require('./badge-controller');
-        earnedBadge = await checkAndAwardBadges(userId, savedQuestion);
+        // Import badge controller - using ES module import instead of require
+        const badgeController = await import('./badge-controller');
+        earnedBadge = await badgeController.checkAndAwardBadges(userId, savedQuestion);
       }
       
       // Prepare response with optional rewards field
@@ -249,9 +249,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.json([]);
       }
       
-      // Import badge controller
-      const { getUserBadges } = require('./badges');
-      const badges = await getUserBadges(userId);
+      // Import badge controller - using ES module import
+      const badgesModule = await import('./badges');
+      const badges = await badgesModule.getUserBadges(userId);
       
       return res.json(badges || []);
     } catch (error) {
