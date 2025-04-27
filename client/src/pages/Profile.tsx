@@ -138,6 +138,38 @@ export default function Profile() {
         <div className="bg-white p-6 rounded-xl shadow-md mb-8">
           <h2 className="text-2xl font-bold text-gray-800 mb-4">My Achievements</h2>
           
+          {/* Badge Info Notice */}
+          <div className="bg-indigo-50 border border-indigo-200 rounded-lg p-4 mb-6">
+            <h3 className="text-lg font-bold text-indigo-800 mb-2">How to Earn Badges</h3>
+            <p className="text-indigo-700 mb-3">
+              BrainSpark rewards your curiosity! Here's how you can collect badges:
+            </p>
+            <ul className="text-indigo-700 space-y-2 pl-5 list-disc">
+              <li>Ask questions about different subjects like science, math, history, or art</li>
+              <li>Complete a series of questions on the same topic</li>
+              <li>Use BrainSpark regularly and reach learning streaks</li>
+              <li>Explore challenging topics appropriate for your age</li>
+              <li>Discover special seasonal badges during holidays</li>
+            </ul>
+            <div className="mt-3 flex flex-wrap gap-2">
+              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-800">
+                Legendary
+              </span>
+              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
+                Epic
+              </span>
+              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                Rare
+              </span>
+              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                Uncommon
+              </span>
+              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                Common
+              </span>
+            </div>
+          </div>
+          
           {loading ? (
             <div className="flex justify-center items-center py-12">
               <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
