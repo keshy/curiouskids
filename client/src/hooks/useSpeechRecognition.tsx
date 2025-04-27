@@ -77,9 +77,9 @@ export default function useSpeechRecognition({
   // Check if this is likely a mobile device
   const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
   
-  // Speech recognition is supported only if the browser supports it and we're not on mobile
-  // (mobile speech recognition is inconsistent across browsers)
-  const isSupported = isBrowserSupported && !isMobile;
+  // Speech recognition is supported if the browser supports it
+  // We'll try to use it on mobile too, but with appropriate warnings
+  const isSupported = isBrowserSupported;
 
   // Initialize the recognition instance
   let recognitionInstance: any = null;
@@ -120,7 +120,22 @@ export default function useSpeechRecognition({
       // Handle errors
       recognitionInstance.onerror = (event: any) => {
         console.error('Speech recognition error:', event.error);
-        setError(event.error);
+        
+        // Handle specific error cases with more user-friendly messages
+        if (event.error === 'not-allowed') {
+          if (isMobile) {
+            setError('Microphone access was denied. On mobile devices, you may need to grant microphone permissions in your browser settings.');
+          } else {
+            setError('Microphone access was denied. Please allow microphone access to use voice input.');
+          }
+        } else if (event.error === 'no-speech') {
+          setError('No speech was detected. Please try speaking again.');
+        } else if (event.error === 'network') {
+          setError('A network error occurred. Please check your connection and try again.');
+        } else {
+          setError(event.error);
+        }
+        
         setListening(false);
       };
 

@@ -19,17 +19,35 @@ export default function QuestionInput({
   currentQuestion = "",
 }: QuestionInputProps) {
   const [textInput, setTextInput] = useState("");
+  const [showError, setShowError] = useState(false);
   
-  const { transcript, listening, startListening, stopListening, isSupported, isMobile } = useSpeechRecognition({
+  const { 
+    transcript, 
+    listening, 
+    startListening, 
+    stopListening, 
+    isSupported, 
+    isMobile,
+    error
+  } = useSpeechRecognition({
     onResult: (result) => {
       // We'll handle the final result in handleStopRecording
     },
   });
 
   const handleStartRecording = () => {
+    // Clear any previous errors when starting a new recording
+    setShowError(false);
     startListening();
     onStartListening();
   };
+  
+  // Show error message when an error occurs
+  useEffect(() => {
+    if (error) {
+      setShowError(true);
+    }
+  }, [error]);
 
   const handleStopRecording = () => {
     stopListening();
@@ -73,31 +91,35 @@ export default function QuestionInput({
             </div>
           </div>
         )}
-        {/* Voice input button - only show when not listening and speech recognition is supported */}
+        {/* Voice input button - show for all supported browsers, including mobile */}
         {!isListening && !isLoading && isSupported && (
-          <button 
-            onClick={handleStartRecording}
-            className="button-press flex items-center justify-center bg-primary hover:bg-primary/80 text-white text-xl font-bold py-4 px-8 rounded-full shadow-lg hover:shadow-xl transition-all mx-auto"
-          >
-            <i className="ri-mic-line mr-2 text-2xl"></i>
-            <span>Talk to Me!</span>
-          </button>
-        )}
-        
-        {/* Show a different message for mobile users */}
-        {!isListening && !isLoading && isMobile && (
-          <div className="text-center mb-4 p-3 bg-yellow-50 border border-yellow-300 rounded-lg">
-            <p className="text-sm text-yellow-800">
-              <i className="ri-information-line mr-1"></i>
-              Voice input is not fully supported on mobile devices. Please type your question below.
-            </p>
+          <div className="flex flex-col items-center">
+            <button 
+              onClick={handleStartRecording}
+              className="button-press flex items-center justify-center bg-primary hover:bg-primary/80 text-white text-xl font-bold py-4 px-8 rounded-full shadow-lg hover:shadow-xl transition-all mx-auto"
+            >
+              <i className="ri-mic-line mr-2 text-2xl"></i>
+              <span>Talk to Me!</span>
+            </button>
+            
+            {/* Show helpful tips for mobile users */}
+            {isMobile && (
+              <div className="text-center mt-3 p-3 bg-yellow-50 border border-yellow-300 rounded-lg max-w-sm">
+                <p className="text-sm text-yellow-800">
+                  <i className="ri-information-line mr-1"></i>
+                  Voice input may work differently on mobile devices. Make sure to grant microphone permissions when prompted.
+                </p>
+              </div>
+            )}
           </div>
         )}
         
         {/* Text input alternative - show when not listening */}
         {!isListening && (
-          <div className="flex flex-col items-center">
-            <p className="text-center text-gray-600 mb-2">{isMobile ? "Type your question here:" : "Or type your question:"}</p>
+          <div className="flex flex-col items-center mt-4">
+            <p className="text-center text-gray-600 mb-2">
+              {isSupported ? "Or type your question:" : "Type your question here:"}
+            </p>
             <div className="relative w-full">
               <input 
                 type="text" 
