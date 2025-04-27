@@ -20,7 +20,7 @@ export default function QuestionInput({
 }: QuestionInputProps) {
   const [textInput, setTextInput] = useState("");
   
-  const { transcript, listening, startListening, stopListening } = useSpeechRecognition({
+  const { transcript, listening, startListening, stopListening, isSupported, isMobile } = useSpeechRecognition({
     onResult: (result) => {
       // We'll handle the final result in handleStopRecording
     },
@@ -73,8 +73,8 @@ export default function QuestionInput({
             </div>
           </div>
         )}
-        {/* Voice input button - show when not listening */}
-        {!isListening && !isLoading && (
+        {/* Voice input button - only show when not listening and speech recognition is supported */}
+        {!isListening && !isLoading && isSupported && (
           <button 
             onClick={handleStartRecording}
             className="button-press flex items-center justify-center bg-primary hover:bg-primary/80 text-white text-xl font-bold py-4 px-8 rounded-full shadow-lg hover:shadow-xl transition-all mx-auto"
@@ -84,10 +84,20 @@ export default function QuestionInput({
           </button>
         )}
         
+        {/* Show a different message for mobile users */}
+        {!isListening && !isLoading && isMobile && (
+          <div className="text-center mb-4 p-3 bg-yellow-50 border border-yellow-300 rounded-lg">
+            <p className="text-sm text-yellow-800">
+              <i className="ri-information-line mr-1"></i>
+              Voice input is not fully supported on mobile devices. Please type your question below.
+            </p>
+          </div>
+        )}
+        
         {/* Text input alternative - show when not listening */}
         {!isListening && (
           <div className="flex flex-col items-center">
-            <p className="text-center text-gray-600 mb-2">Or type your question:</p>
+            <p className="text-center text-gray-600 mb-2">{isMobile ? "Type your question here:" : "Or type your question:"}</p>
             <div className="relative w-full">
               <input 
                 type="text" 
