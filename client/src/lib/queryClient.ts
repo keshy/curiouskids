@@ -10,11 +10,12 @@ async function throwIfResNotOk(res: Response) {
 export async function apiRequest<T = any>(
   url: string,
   options: {
-    method: string;
+    method?: string;
     data?: unknown | undefined;
+    on401?: UnauthorizedBehavior;
   } = { method: 'GET' }
-): Promise<T> {
-  const { method, data } = options;
+): Promise<T | null> {
+  const { method = 'GET', data, on401 = 'throw' } = options;
   
   const res = await fetch(url, {
     method,
@@ -22,6 +23,12 @@ export async function apiRequest<T = any>(
     body: data ? JSON.stringify(data) : undefined,
     credentials: "include",
   });
+
+  // Handle 401 responses based on the on401 option
+  if (on401 === "returnNull" && res.status === 401) {
+    console.log(`API Request to ${url} returned 401, returning null as requested`);
+    return null;
+  }
 
   await throwIfResNotOk(res);
   return await res.json();
