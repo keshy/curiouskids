@@ -46,16 +46,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const validatedData = askRequestSchema.parse(req.body);
       const { question, contentFilter, generateImage, generateAudio, guestId } = validatedData;
       
-      // Get user ID - prioritize authenticated user ID, fall back to guest ID
+      // Get user ID - authenticated users have numeric IDs in the session
       let userId = (req as any).session?.userId || null;
+      let guestUserId = null;
       
-      // If we have a guestId from the request and no authenticated userId, use the guestId as userId
-      if (!userId && guestId) {
-        userId = guestId;
-        console.log("Using guest ID as user ID for question:", guestId);
+      // Handle guest users (they have string IDs like "guest_abc123")
+      if (!userId && validatedData.guestId) {
+        guestUserId = validatedData.guestId;
+        console.log("Using guest ID for question:", guestUserId);
       }
       
-      console.log("Question being saved with userId:", userId);
+      if (userId) {
+        console.log("Question being saved with authenticated userId:", userId);
+      } else if (guestUserId) {
+        console.log("Question being saved with guestId:", guestUserId);
+      } else {
+        console.log("Anonymous question (no user or guest ID)");
+      }
       
       // Process the question through OpenAI
       const answer = await processQuestion(question, contentFilter, generateImage, generateAudio);
@@ -63,6 +70,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Store the question and answer in the database
       const savedQuestion = await storage.createQuestion({
         userId: userId,
+        guestId: guestUserId,
         question,
         answer: answer.text,
         imageUrl: answer.imageUrl,
@@ -125,7 +133,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
-  // Get questions for guest users by their guest ID (stored in the guestId parameter)
+  // Get questions for guest users by their guest ID (stored in the guestId query parameter)
   app.get("/api/questions/guest", async (req, res) => {
     try {
       const guestId = req.query.guestId as string;
@@ -136,32 +144,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       console.log("Fetching questions for guest ID:", guestId);
       
-      // Fetch all questions and filter by the guestId field
-      // Since we're storing the guestId in the userId field as a string, we need to do a string comparison
-      const allQuestions = await storage.getRecentQuestions(100); // Fetch more to ensure we get user's questions
-      
-      // Log all questions to help with debugging
-      console.log("All questions:", JSON.stringify(allQuestions.map(q => ({ 
-        id: q.id, 
-        userId: q.userId,
-        question: q.question.substring(0, 20) + "..."
-      }))));
-      
-      const guestQuestions = allQuestions.filter(q => {
-        // Compare as strings to handle any type mismatches
-        const questionUserId = q.userId !== null ? q.userId.toString() : null;
-        const matches = questionUserId === guestId;
-        
-        if (matches) {
-          console.log("Found matching question for guest:", q.id, q.question.substring(0, 20) + "...");
-        }
-        
-        return matches;
-      });
+      // Use the new storage method to get questions by guestId
+      const guestQuestions = await storage.getGuestQuestions(guestId, 20);
       
       console.log(`Found ${guestQuestions.length} questions for guest ID ${guestId}`);
       
-      return res.json(guestQuestions.slice(0, 20)); // Return at most 20
+      return res.json(guestQuestions);
     } catch (error) {
       console.error("Error fetching guest questions:", error);
       return res.status(500).json({ 

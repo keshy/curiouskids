@@ -28,6 +28,7 @@ export interface IStorage {
   createQuestion(question: InsertQuestion): Promise<Question>;
   getRecentQuestions(limit: number): Promise<Question[]>;
   getUserQuestions(userId: number, limit: number): Promise<Question[]>;
+  getGuestQuestions(guestId: string, limit: number): Promise<Question[]>;
   
   // Badge management
   getBadges(): Promise<Badge[]>;
@@ -89,6 +90,15 @@ export class DatabaseStorage implements IStorage {
       .select()
       .from(questionsTable)
       .where(eq(questionsTable.userId, userId))
+      .orderBy(desc(questionsTable.createdAt))
+      .limit(limit);
+  }
+  
+  async getGuestQuestions(guestId: string, limit: number): Promise<Question[]> {
+    return await db
+      .select()
+      .from(questionsTable)
+      .where(eq(questionsTable.guestId, guestId))
       .orderBy(desc(questionsTable.createdAt))
       .limit(limit);
   }
