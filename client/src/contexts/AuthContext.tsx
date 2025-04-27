@@ -45,6 +45,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   // Authenticate with backend
   const authenticateWithBackend = async (firebaseUser: User) => {
     try {
+      console.log('Authenticating with backend, Firebase user:', firebaseUser.uid);
+      
       // Send Firebase user data to our backend
       const response = await fetch('/api/auth/firebase', {
         method: 'POST',
@@ -53,18 +55,22 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         },
         body: JSON.stringify({
           firebaseId: firebaseUser.uid,
-          email: firebaseUser.email,
-          displayName: firebaseUser.displayName,
-          photoUrl: firebaseUser.photoURL,
+          email: firebaseUser.email || '',
+          displayName: firebaseUser.displayName || '',
+          photoUrl: firebaseUser.photoURL || '',
         }),
         credentials: 'include', // Important for session cookies
       });
       
       if (!response.ok) {
-        throw new Error('Failed to authenticate with backend');
+        const errorText = await response.text();
+        console.error('Backend authentication failed:', response.status, errorText);
+        throw new Error(`Failed to authenticate with backend: ${response.status} ${errorText}`);
       }
       
-      console.log('Successfully authenticated with backend');
+      // Try to parse the response 
+      const userData = await response.json();
+      console.log('Successfully authenticated with backend', userData);
       
       // Set user state
       setUser({
@@ -73,7 +79,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       });
     } catch (error) {
       console.error('Backend authentication error:', error);
-      setError('Failed to authenticate with backend server');
+      // Still set the user state so the app is usable, but in a degraded state
+      setUser({
+        isGuest: false,
+        firebaseUser,
+      });
+      // Store error message
+      setError('Failed to authenticate with backend server. Some features may not work properly.');
     }
   };
 

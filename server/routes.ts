@@ -161,9 +161,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Get questions for the current user (authenticated users only)
   app.get("/api/questions/user", async (req, res) => {
     try {
-      // Get user ID from session
-      const userId = (req as any).session?.userId;
+      // Try to get user ID from query parameter (Firebase auth)
+      const firebaseId = req.query.firebaseId as string;
+      let userId = null;
       
+      // If Firebase ID is provided, try to get the user
+      if (firebaseId) {
+        console.log("Looking up user by Firebase ID:", firebaseId);
+        const user = await storage.getUserByFirebaseId(firebaseId);
+        if (user) {
+          userId = user.id;
+          console.log("Found user ID:", userId, "for Firebase ID:", firebaseId);
+        }
+      } 
+      
+      // If no Firebase ID or no user found, check session
+      if (!userId) {
+        userId = (req as any).session?.userId;
+      }
+      
+      // If we still don't have a user ID, return unauthorized
       if (!userId) {
         return res.status(401).json({ message: "Unauthorized" });
       }
@@ -228,8 +245,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       // Set session
-      (req as any).session.userId = user.id;
-      (req as any).session.save();
+      if ((req as any).session) {
+        (req as any).session.userId = user.id;
+        
+        // Save session explicitly
+        if (typeof (req as any).session.save === 'function') {
+          (req as any).session.save((err: any) => {
+            if (err) {
+              console.error('Error saving session:', err);
+            } else {
+              console.log('Session saved successfully, userId:', user.id);
+            }
+          });
+        } else {
+          console.log('Session saved (implicit), userId:', user.id);
+        }
+      } else {
+        console.error('Session object not available');
+      }
       
       return res.json({ 
         id: user.id,
