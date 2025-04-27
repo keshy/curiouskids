@@ -201,6 +201,47 @@ export async function registerRoutes(app: Express): Promise<Server> {
       return res.json([]);
     }
   });
+  
+  // Authenticate with Firebase
+  app.post("/api/auth/firebase", async (req, res) => {
+    try {
+      const { firebaseId, email, displayName, photoUrl } = req.body;
+      
+      if (!firebaseId) {
+        return res.status(400).json({ message: "Firebase ID is required" });
+      }
+      
+      // Check if user exists
+      let user = await storage.getUserByFirebaseId(firebaseId);
+      
+      if (!user) {
+        // Create a new user
+        user = await storage.createUser({
+          username: email || `user_${Date.now()}`,
+          firebaseId,
+          email,
+          displayName,
+          photoURL: photoUrl,
+          isGuest: false
+        });
+        console.log("Created new user:", user.id);
+      }
+      
+      // Set session
+      (req as any).session.userId = user.id;
+      (req as any).session.save();
+      
+      return res.json({ 
+        id: user.id,
+        username: user.username,
+        displayName: user.displayName || user.username,
+        photoUrl: user.photoURL
+      });
+    } catch (error) {
+      console.error("Error authenticating with Firebase:", error);
+      return res.status(500).json({ message: "Authentication failed" });
+    }
+  });
 
   const httpServer = createServer(app);
   return httpServer;
