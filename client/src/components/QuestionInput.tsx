@@ -38,11 +38,17 @@ export default function QuestionInput({
     },
   });
 
-  const handleStartRecording = () => {
+  const handleStartRecording = async () => {
     // Clear any previous errors when starting a new recording
     setShowError(false);
-    startListening();
-    onStartListening();
+    
+    try {
+      await startListening();
+      onStartListening();
+    } catch (err) {
+      console.error("Error starting speech recognition:", err);
+      setShowError(true);
+    }
   };
   
   // Show error message when an error occurs

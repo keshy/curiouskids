@@ -81,44 +81,74 @@ export default function useSpeechRecognition({
   // We'll try to use it on mobile too, but with appropriate warnings
   const isSupported = isBrowserSupported;
 
-  // Initialize the recognition instance
-  let recognitionInstance: any = null;
+  // Use state to store the recognition instance
+  const [recognitionInstance, setRecognitionInstance] = useState<SpeechRecognition | null>(null);
 
-  const startListening = useCallback(() => {
+  // Function to request permission for the microphone
+  const requestMicrophonePermission = async (): Promise<boolean> => {
+    try {
+      if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+        // This will prompt for microphone permission
+        await navigator.mediaDevices.getUserMedia({ audio: true });
+        return true;
+      }
+      return false;
+    } catch (err) {
+      console.error('Error requesting microphone permission:', err);
+      return false;
+    }
+  };
+
+  const startListening = useCallback(async () => {
     if (!isSupported) {
       setError('Speech recognition is not supported in your browser.');
       return;
     }
 
+    // Clear any previous errors
+    setError(null);
+
+    // Try to get microphone permission first
+    const hasMicPermission = await requestMicrophonePermission();
+    if (!hasMicPermission) {
+      setError('Microphone access is required for voice input. Please allow microphone access in your browser settings.');
+      return;
+    }
+
     try {
       // Create a new recognition instance each time to prevent issues
-      recognitionInstance = new SpeechRecognition();
+      const recognition = new SpeechRecognition();
+      setRecognitionInstance(recognition);
       
       // Configure the recognition
-      recognitionInstance.continuous = continuous;
-      recognitionInstance.interimResults = true;
-      recognitionInstance.lang = language;
+      recognition.continuous = continuous;
+      recognition.interimResults = true;
+      recognition.lang = language;
 
       // Clear previous transcript
       setTranscript('');
       
-      // Start listening
-      recognitionInstance.start();
-      setListening(true);
-
       // Handle results
-      recognitionInstance.onresult = (event: any) => {
-        const result = event.results[0];
-        const transcript = result[0].transcript;
-        setTranscript(transcript);
+      recognition.onresult = (event: SpeechRecognitionEvent) => {
+        // Make sure to handle potentially multiple results
+        const results = event.results;
+        let latestTranscript = '';
         
-        if (result.isFinal && onResult) {
-          onResult(transcript);
+        // Get the latest transcript from all results
+        for (let i = event.resultIndex; i < results.length; i++) {
+          latestTranscript += results[i][0].transcript;
+        }
+        
+        setTranscript(latestTranscript);
+        
+        // If this is a final result, call the onResult callback
+        if (results[results.length - 1].isFinal && onResult) {
+          onResult(latestTranscript);
         }
       };
 
       // Handle errors
-      recognitionInstance.onerror = (event: any) => {
+      recognition.onerror = (event: SpeechRecognitionErrorEvent) => {
         console.error('Speech recognition error:', event.error);
         
         // Handle specific error cases with more user-friendly messages
@@ -129,42 +159,61 @@ export default function useSpeechRecognition({
             setError('Microphone access was denied. Please allow microphone access to use voice input.');
           }
         } else if (event.error === 'no-speech') {
-          setError('No speech was detected. Please try speaking again.');
+          setError('No speech was detected. Please try speaking again and make sure your microphone is working.');
         } else if (event.error === 'network') {
           setError('A network error occurred. Please check your connection and try again.');
+        } else if (event.error === 'aborted') {
+          setError('Speech recognition was aborted. Please try again.');
+        } else if (event.error === 'audio-capture') {
+          setError('No microphone was found. Please ensure your device has a working microphone.');
+        } else if (event.error === 'service-not-allowed') {
+          setError('Speech recognition service is not allowed. This might be due to browser restrictions.');
         } else {
-          setError(event.error);
+          setError(`Speech recognition error: ${event.error}`);
         }
         
         setListening(false);
       };
 
       // Handle when recognition stops
-      recognitionInstance.onend = () => {
+      recognition.onend = () => {
         setListening(false);
       };
+      
+      // Start listening
+      recognition.start();
+      setListening(true);
+      
     } catch (error) {
       console.error('Error starting speech recognition:', error);
-      setError('Failed to start speech recognition.');
+      setError('Failed to start speech recognition. Please try again or use text input instead.');
       setListening(false);
     }
   }, [continuous, isSupported, language, onResult]);
 
   const stopListening = useCallback(() => {
     if (recognitionInstance) {
-      recognitionInstance.stop();
+      try {
+        recognitionInstance.stop();
+      } catch (error) {
+        console.error('Error stopping speech recognition:', error);
+      }
       setListening(false);
     }
-  }, []);
+  }, [recognitionInstance]);
 
   // Clean up on unmount
   useEffect(() => {
     return () => {
       if (recognitionInstance) {
-        recognitionInstance.stop();
+        try {
+          recognitionInstance.stop();
+        } catch (error) {
+          console.error('Error stopping speech recognition during cleanup:', error);
+        }
       }
     };
-  }, []);
+  }, [recognitionInstance]);
 
   return {
     transcript,
