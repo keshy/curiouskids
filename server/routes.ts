@@ -36,7 +36,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     contentFilter: z.enum(["strict", "moderate", "standard"]).default("strict"),
     generateImage: z.boolean().default(true),
     generateAudio: z.boolean().default(true),
-    guestId: z.string().optional() // Optional guest user ID
+    guestId: z.string().optional(), // Optional guest user ID
+    firebaseId: z.string().optional() // Optional Firebase ID for authenticated users
   });
 
   // API endpoint to ask a question

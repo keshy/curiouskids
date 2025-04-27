@@ -38,7 +38,14 @@ export default function History() {
           // Use the user-specific endpoint for logged-in users
           console.log("Fetching questions for authenticated user");
           try {
-            const result = await apiRequest<Question[]>(`/api/questions/user`, { on401: "returnNull" });
+            // Pass the Firebase UID as a query parameter
+            const firebaseId = user.firebaseUser.uid;
+            console.log("Using Firebase ID for authentication:", firebaseId);
+            
+            const result = await apiRequest<Question[]>(
+              `/api/questions/user?firebaseId=${encodeURIComponent(firebaseId)}`, 
+              { on401: "returnNull" }
+            );
             
             // If we get null back due to 401, the user session might have expired
             if (result === null) {

@@ -80,8 +80,17 @@ export default function AskMeBuddy() {
     setSpeechBubbleText("Great question! Let me think...");
 
     try {
-      // Include the guest user ID in the request if user is guest
-      const userData = user?.isGuest ? { guestId: user.id } : {};
+      // Include the appropriate user ID in the request
+      let userData = {};
+      
+      if (user?.isGuest) {
+        // For guest users, include the guest ID
+        userData = { guestId: user.id };
+      } else if (user && !user.isGuest) {
+        // For authenticated users, include the Firebase ID
+        userData = { firebaseId: user.firebaseUser.uid };
+      }
+      
       console.log("User data for question:", userData, "User type:", user?.isGuest ? "Guest" : "Authenticated");
       
       const res = await fetch('/api/ask', {
@@ -94,7 +103,7 @@ export default function AskMeBuddy() {
           contentFilter: settings.contentFilter,
           generateImage: settings.showImages,
           generateAudio: settings.textToSpeech,
-          ...userData // Spread in the user data (will be empty if not a guest)
+          ...userData // Spread in the user data
         }),
       });
 
