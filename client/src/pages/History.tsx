@@ -164,7 +164,8 @@ export default function History() {
                     </div>
                   )}
                   
-                  {q.audioUrl && (
+                  {/* Only show audio for logged-in users, not guests */}
+                  {q.audioUrl && !user?.isGuest && (
                     <div className="mt-4 flex justify-center">
                       <audio 
                         controls 
@@ -173,6 +174,21 @@ export default function History() {
                       >
                         Your browser does not support the audio element.
                       </audio>
+                    </div>
+                  )}
+                  
+                  {/* For guest users with audio available, show sign-in prompt */}
+                  {q.audioUrl && user?.isGuest && (
+                    <div className="mt-4 flex justify-center">
+                      <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 flex items-center max-w-md w-full">
+                        <i className="ri-lock-line text-blue-500 mr-2"></i>
+                        <span className="text-blue-700 text-sm mr-2">Sign in to access audio playback</span>
+                        <Link to="/login">
+                          <button className="button-press bg-blue-500 hover:bg-blue-600 text-white text-xs py-1 px-3 rounded-full">
+                            Sign In
+                          </button>
+                        </Link>
+                      </div>
                     </div>
                   )}
                 </div>
