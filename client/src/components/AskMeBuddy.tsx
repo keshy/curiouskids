@@ -5,6 +5,9 @@ import QuestionInput from "./QuestionInput";
 import ResponseDisplay from "./ResponseDisplay";
 import QuestionSuggestions from "./QuestionSuggestions";
 import ParentSettingsModal from "./ParentSettingsModal";
+import BadgeNotification from "./BadgeNotification";
+import { useAuth } from "@/contexts/AuthContext";
+import type { Badge, Achievement } from "@shared/schema";
 
 export type MascotState = "idle" | "listening" | "thinking" | "speaking";
 export type Response = {
@@ -12,6 +15,11 @@ export type Response = {
   imageUrl: string;
   audioUrl?: string;
   suggestedQuestions?: string[];
+  isLoading?: boolean;
+  rewards?: {
+    badgeEarned?: Badge;
+    achievementProgress?: Achievement;
+  };
 };
 
 export type Settings = {
@@ -22,12 +30,15 @@ export type Settings = {
 };
 
 export default function AskMeBuddy() {
+  const { user } = useAuth(); // Get the current user
   const [mascotState, setMascotState] = useState<MascotState>("idle");
   const [speechBubbleText, setSpeechBubbleText] = useState<string>("Hi there! What would you like to know?");
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [response, setResponse] = useState<Response | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [question, setQuestion] = useState("");
+  const [earnedBadge, setEarnedBadge] = useState<Badge | null>(null);
+  const [showBadgeNotification, setShowBadgeNotification] = useState(false);
   const [settings, setSettings] = useState<Settings>({
     textToSpeech: true,
     showImages: true,
@@ -63,11 +74,25 @@ export default function AskMeBuddy() {
     
     setQuestion(newQuestion);
     setIsLoading(true);
-    setResponse(null); // Clear previous response
+    // Keep the previous response for suggestions, but mark as loading
+    setResponse(prevResponse => prevResponse ? {...prevResponse, isLoading: true} : null);
     setMascotState("thinking");
     setSpeechBubbleText("Great question! Let me think...");
 
     try {
+      // Include the appropriate user ID in the request
+      let userData = {};
+      
+      if (user?.isGuest) {
+        // For guest users, include the guest ID
+        userData = { guestId: user.id };
+      } else if (user && !user.isGuest) {
+        // For authenticated users, include the Firebase ID
+        userData = { firebaseId: user.firebaseUser.uid };
+      }
+      
+      console.log("User data for question:", userData, "User type:", user?.isGuest ? "Guest" : "Authenticated");
+      
       const res = await fetch('/api/ask', {
         method: 'POST',
         headers: {
@@ -77,7 +102,8 @@ export default function AskMeBuddy() {
           question: newQuestion, // Use the newQuestion parameter, not the state
           contentFilter: settings.contentFilter,
           generateImage: settings.showImages,
-          generateAudio: settings.textToSpeech
+          generateAudio: settings.textToSpeech,
+          ...userData // Spread in the user data
         }),
       });
 
@@ -88,14 +114,28 @@ export default function AskMeBuddy() {
       const data = await res.json();
       setResponse(data);
       
+      // Update current suggestions with the new ones from response
+      if (data.suggestedQuestions && data.suggestedQuestions.length > 0) {
+        setCurrentSuggestions(data.suggestedQuestions);
+      }
+      
+      // Check for earned badges
+      if (data.rewards && data.rewards.badgeEarned) {
+        setEarnedBadge(data.rewards.badgeEarned);
+        setShowBadgeNotification(true);
+        
+        // Change speech bubble text to celebrate badge
+        setSpeechBubbleText(`Wow! You earned the ${data.rewards.badgeEarned.name} badge! Great job!`);
+      } else {
+        setSpeechBubbleText("How was that? Ask me something else!");
+      }
+      
       // After getting response, set mascot to speaking if text-to-speech is enabled
       if (settings.textToSpeech) {
         setMascotState("speaking");
       } else {
         setMascotState("idle");
       }
-      
-      setSpeechBubbleText("How was that? Ask me something else!");
     } catch (error) {
       console.error("Error asking question:", error);
       setSpeechBubbleText("Oops! I couldn't answer that. Try asking something else!");
@@ -116,6 +156,9 @@ export default function AskMeBuddy() {
     "What are dinosaurs?",
     "Why do we need to sleep?",
   ]);
+  
+  // Keep track of the current active suggestions to avoid going back to defaults
+  const [currentSuggestions, setCurrentSuggestions] = useState<string[] | undefined>(suggestions);
 
   // Create decorative clouds and bubbles
   const clouds = Array.from({ length: 8 }, (_, i) => ({
@@ -204,6 +247,7 @@ export default function AskMeBuddy() {
           isListening={mascotState === "listening"}
           isLoading={isLoading}
           currentQuestion={isLoading ? question : undefined}
+          isGuestUser={user?.isGuest || false}
         />
         
         <ResponseDisplay 
@@ -211,10 +255,11 @@ export default function AskMeBuddy() {
           isLoading={isLoading}
           textToSpeech={settings.textToSpeech}
           onSpeakingEnd={handleSpeakingEnd}
+          isGuestUser={user?.isGuest || false}
         />
         
         <QuestionSuggestions 
-          suggestions={response?.suggestedQuestions}
+          suggestions={response?.suggestedQuestions || currentSuggestions}
           defaultSuggestions={suggestions}
           onSelectSuggestion={handleQuestion}
         />
@@ -225,6 +270,15 @@ export default function AskMeBuddy() {
           settings={settings}
           onClose={handleCloseSettings}
           onSave={handleSaveSettings}
+        />
+      )}
+
+      {/* Badge notification when a new badge is earned */}
+      {showBadgeNotification && earnedBadge && (
+        <BadgeNotification
+          badge={earnedBadge}
+          onClose={() => setShowBadgeNotification(false)}
+          autoCloseTime={6000}
         />
       )}
     </div>

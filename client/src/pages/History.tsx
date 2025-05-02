@@ -1,34 +1,83 @@
 import { useState, useEffect } from "react";
-import { Link } from "wouter";
+import { Link, useLocation } from "wouter";
 import { apiRequest } from "@/lib/queryClient";
 import { Question } from "@shared/schema";
+import { useAuth } from "@/contexts/AuthContext";
 
 export default function History() {
   const [questions, setQuestions] = useState<Question[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const { user } = useAuth();
+  const [_, navigate] = useLocation();
 
-  // Fetch recent questions on component mount
+  // Redirect to login if no user
   useEffect(() => {
-    const fetchRecentQuestions = async () => {
+    if (!user) {
+      navigate("/login");
+      return;
+    }
+  }, [user, navigate]);
+
+  // Fetch user's questions on component mount
+  useEffect(() => {
+    if (!user) return; // Don't fetch if not logged in
+    
+    const fetchQuestions = async () => {
       try {
         setLoading(true);
-        const data = await apiRequest<Question[]>(`/api/questions/recent`);
-        setQuestions(data);
+        let data: Question[] = [];
+        
+        if (user.isGuest) {
+          // Send the guest ID as a query parameter for guest users
+          console.log("Fetching guest questions with ID:", user.id);
+          console.log("Guest user object:", user);
+          const result = await apiRequest<Question[]>(`/api/questions/guest?guestId=${encodeURIComponent(user.id)}`);
+          data = result || []; // Ensure we always have an array
+        } else {
+          // Use the user-specific endpoint for logged-in users
+          console.log("Fetching questions for authenticated user");
+          try {
+            // Pass the Firebase UID as a query parameter
+            const firebaseId = user.firebaseUser.uid;
+            console.log("Using Firebase ID for authentication:", firebaseId);
+            
+            const result = await apiRequest<Question[]>(
+              `/api/questions/user?firebaseId=${encodeURIComponent(firebaseId)}`, 
+              { on401: "returnNull" }
+            );
+            
+            // If we get null back due to 401, the user session might have expired
+            if (result === null) {
+              console.log("Session expired or user unauthorized");
+              // We'll just show empty state rather than error
+              data = [];
+            } else {
+              data = result;
+            }
+          } catch (authErr) {
+            console.error("Error with authentication:", authErr);
+            // Just show empty state if there's an auth error
+            data = [];
+          }
+        }
+        
+        setQuestions(data || []); // Ensure we always have an array
       } catch (err) {
         console.error("Error fetching question history:", err);
-        setError("Failed to load question history. Please try again later.");
+        // Don't show error for empty states, just set empty questions
+        setQuestions([]);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchRecentQuestions();
-  }, []);
+    fetchQuestions();
+  }, [user]);
 
   // Format date string
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
+  const formatDate = (dateValue: string | Date) => {
+    const date = typeof dateValue === 'string' ? new Date(dateValue) : dateValue;
     return date.toLocaleString();
   };
 
@@ -63,7 +112,7 @@ export default function History() {
               <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
                 <path fillRule="evenodd" d="M9.707 14.707a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 1.414L7.414 9H15a1 1 0 110 2H7.414l2.293 2.293a1 1 0 010 1.414z" clipRule="evenodd" />
               </svg>
-              Back to OptiBrain Prime
+              Back to BrainSpark
             </div>
           </Link>
         </div>
@@ -77,8 +126,20 @@ export default function History() {
             <p>{error}</p>
           </div>
         ) : questions.length === 0 ? (
-          <div className="bg-blue-100 border-l-4 border-blue-500 text-blue-700 p-4 rounded shadow-md">
-            <p>No questions have been asked yet. Go back and ask OptiBrain Prime something!</p>
+          <div className="bg-blue-100 border-l-4 border-blue-500 p-6 rounded-xl shadow-md text-center">
+            <div className="flex flex-col items-center">
+              <div className="text-6xl mb-4">🌟</div>
+              <h3 className="text-2xl font-bold text-blue-700 mb-2">No Questions Yet!</h3>
+              <p className="text-blue-600 mb-4">You haven't asked any questions yet. Return to BrainSpark and ask something exciting!</p>
+              <Link href="/">
+                <div className="bg-primary hover:bg-blue-600 text-white font-bold py-3 px-6 rounded-full cursor-pointer transition-all hover:scale-105 inline-flex items-center">
+                  <span className="mr-2">Ask Your First Question</span>
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                    <path fillRule="evenodd" d="M10.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L12.586 11H5a1 1 0 110-2h7.586l-2.293-2.293a1 1 0 010-1.414z" clipRule="evenodd" />
+                  </svg>
+                </div>
+              </Link>
+            </div>
           </div>
         ) : (
           <div className="space-y-6">
