@@ -27,8 +27,8 @@ export default function EarnedBadgesDisplay() {
         setLoading(true);
         const data = await apiRequest<BadgesResponse>(`/api/badges`);
         
-        if (data && data.earnedBadges) {
-          setEarnedBadges(data.earnedBadges || []);
+        if (data && Array.isArray(data.earnedBadges)) {
+          setEarnedBadges(data.earnedBadges);
         } else {
           console.warn("Unexpected badge data format:", data);
           setEarnedBadges([]);

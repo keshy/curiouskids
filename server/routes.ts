@@ -298,7 +298,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const badgesModule = await import('./badges');
       const badges = await badgesModule.getUserBadges(userId);
       
-      return res.json(badges || []);
+      return res.json(badges || { earnedBadges: [], availableBadges: [] });
     } catch (error) {
       console.error("Error fetching badges:", error);
       // Return empty badges object structure on error too
