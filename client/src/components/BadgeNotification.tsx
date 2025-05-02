@@ -1,6 +1,29 @@
 import React, { useState, useEffect } from 'react';
 import { Badge } from '@shared/schema';
 
+// Helper function to get badge image URL with fallbacks
+const getBadgeImageUrl = (badge: Badge): string => {
+  // Special mapping for milestone and special badges
+  if (badge.category === 'milestone' || badge.category === 'special') {
+    const imageName = badge.name.toLowerCase().replace(/\s+/g, '-');
+    return `/badges/${imageName}.svg`;
+  }
+  
+  // For category badges like science, math, reading, etc.
+  if (badge.category) {
+    // Try to use the category-specific image name pattern
+    if (badge.category === 'science') return '/badges/science-explorer.svg';
+    if (badge.category === 'math') return '/badges/math-whiz.svg';
+    if (badge.category === 'reading') return '/badges/reading-star.svg';
+    
+    // Fallback to just the category name
+    return `/badges/${badge.category}.svg`;
+  }
+  
+  // Default fallback
+  return '/badges/default.svg';
+};
+
 interface BadgeNotificationProps {
   badge: Badge;
   onClose: () => void;
@@ -88,10 +111,11 @@ export default function BadgeNotification({
             <div className="flex-shrink-0 mr-4">
               <div className="w-16 h-16 rounded-full bg-white/80 p-1 flex items-center justify-center">
                 <img 
-                  src={badge.imageUrl} 
+                  src={getBadgeImageUrl(badge)} 
                   alt={badge.name} 
                   className="w-12 h-12 object-contain"
                   onError={(e) => {
+                    console.log(`Badge image failed to load: ${badge.name} (${badge.category})`);
                     // Fallback for missing images
                     (e.target as HTMLImageElement).src = '/badges/default.svg';
                   }}

@@ -4,6 +4,29 @@ import { useAuth } from '@/contexts/AuthContext';
 import { apiRequest } from '@/lib/queryClient';
 import { Badge } from '@shared/schema';
 
+// Helper function to get badge image URL with fallbacks
+const getBadgeImageUrl = (badge: Badge): string => {
+  // Special mapping for milestone and special badges
+  if (badge.category === 'milestone' || badge.category === 'special') {
+    const imageName = badge.name.toLowerCase().replace(/\s+/g, '-');
+    return `/badges/${imageName}.svg`;
+  }
+  
+  // For category badges like science, math, reading, etc.
+  if (badge.category) {
+    // Try to use the category-specific image name pattern
+    if (badge.category === 'science') return '/badges/science-explorer.svg';
+    if (badge.category === 'math') return '/badges/math-whiz.svg';
+    if (badge.category === 'reading') return '/badges/reading-star.svg';
+    
+    // Fallback to just the category name
+    return `/badges/${badge.category}.svg`;
+  }
+  
+  // Default fallback
+  return '/badges/default.svg';
+};
+
 interface BadgesResponse {
   earnedBadges: Badge[];
   availableBadges: Badge[];
@@ -85,17 +108,13 @@ export default function EarnedBadgesDisplay() {
             >
               <div className="w-12 h-12 rounded-full overflow-hidden mb-1 group hover:scale-110 transition-transform">
                 <img 
-                  src={badge.imageUrl || `/badges/${badge.category.replace(/-/g, '_')}.svg`} 
+                  src={getBadgeImageUrl(badge)}
                   alt={badge.name}
                   className="w-full h-full object-cover"
                   onError={(e) => {
-                    // Try the category name with underscore if imageUrl fails
-                    if (badge.category) {
-                      (e.target as HTMLImageElement).src = `/badges/${badge.category.replace(/-/g, '_')}.svg`;
-                    } else {
-                      // Final fallback
-                      (e.target as HTMLImageElement).src = '/badges/default.svg';
-                    }
+                    console.log(`Badge image failed to load: ${badge.name} (${badge.category})`);
+                    // Final fallback
+                    (e.target as HTMLImageElement).src = '/badges/default.svg';
                   }}
                 />
               </div>
