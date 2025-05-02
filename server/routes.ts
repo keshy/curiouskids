@@ -287,8 +287,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       if (!userId) {
-        // Instead of returning 401, return empty array for unauthenticated users
-        return res.json([]);
+        // Return empty badges object structure for unauthenticated users
+        return res.json({
+          earnedBadges: [],
+          availableBadges: []
+        });
       }
       
       // Import badge controller - using ES module import
@@ -298,8 +301,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       return res.json(badges || []);
     } catch (error) {
       console.error("Error fetching badges:", error);
-      // Return empty array on error too
-      return res.json([]);
+      // Return empty badges object structure on error too
+      return res.json({
+        earnedBadges: [],
+        availableBadges: []
+      });
     }
   });
   
