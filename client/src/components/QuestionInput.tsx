@@ -34,7 +34,10 @@ export default function QuestionInput({
     error
   } = useSpeechRecognition({
     onResult: (result) => {
-      // We'll handle the final result in handleStopRecording
+      // This will be triggered both by manual stop and auto-stop after silence
+      if (result.trim()) {
+        onSubmitQuestion(result);
+      }
     },
   });
 
@@ -190,7 +193,8 @@ export default function QuestionInput({
             <div className="recording-animation w-20 h-20 bg-red-500 rounded-full flex items-center justify-center mb-2">
               <i className="ri-mic-line text-white text-3xl"></i>
             </div>
-            <p className="text-xl">I'm listening...</p>
+            <p className="text-xl mb-1">I'm listening...</p>
+            <p className="text-xs text-gray-500 mb-2">I'll automatically stop when you're done speaking</p>
             {transcript && (
               <p className="my-2 text-lg text-gray-600 italic">"{transcript}"</p>
             )}

@@ -65,6 +65,10 @@ export default function useSpeechRecognition({
   const [transcript, setTranscript] = useState('');
   const [listening, setListening] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  // State to track silence detection
+  const [lastSpeechTimestamp, setLastSpeechTimestamp] = useState<number | null>(null);
+  const [silenceTimer, setSilenceTimer] = useState<number | null>(null);
+  const SILENCE_TIMEOUT = 3000; // 3 seconds of silence before auto-submit
 
   // Define the SpeechRecognition constructor
   const SpeechRecognition = 
@@ -141,6 +145,28 @@ export default function useSpeechRecognition({
         
         setTranscript(latestTranscript);
         
+        // Update the last speech timestamp for silence detection
+        setLastSpeechTimestamp(Date.now());
+        
+        // Clear any existing silence timer
+        if (silenceTimer !== null) {
+          window.clearTimeout(silenceTimer);
+          setSilenceTimer(null);
+        }
+        
+        // Set a new silence timer - if no speech is detected for SILENCE_TIMEOUT ms, auto-submit
+        const timer = window.setTimeout(() => {
+          if (listening && latestTranscript.trim() !== '') {
+            console.log('Silence detected - auto-submitting');
+            stopListening();
+            if (onResult) {
+              onResult(latestTranscript);
+            }
+          }
+        }, SILENCE_TIMEOUT);
+        
+        setSilenceTimer(timer);
+        
         // If this is a final result, call the onResult callback
         if (results[results.length - 1].isFinal && onResult) {
           onResult(latestTranscript);
@@ -192,6 +218,12 @@ export default function useSpeechRecognition({
   }, [continuous, isSupported, language, onResult]);
 
   const stopListening = useCallback(() => {
+    // Clear any existing silence timer
+    if (silenceTimer !== null) {
+      window.clearTimeout(silenceTimer);
+      setSilenceTimer(null);
+    }
+    
     if (recognitionInstance) {
       try {
         recognitionInstance.stop();
@@ -200,11 +232,16 @@ export default function useSpeechRecognition({
       }
       setListening(false);
     }
-  }, [recognitionInstance]);
+  }, [recognitionInstance, silenceTimer]);
 
   // Clean up on unmount
   useEffect(() => {
     return () => {
+      // Clear any running timers
+      if (silenceTimer !== null) {
+        window.clearTimeout(silenceTimer);
+      }
+      
       if (recognitionInstance) {
         try {
           recognitionInstance.stop();
@@ -213,7 +250,7 @@ export default function useSpeechRecognition({
         }
       }
     };
-  }, [recognitionInstance]);
+  }, [recognitionInstance, silenceTimer]);
 
   return {
     transcript,
