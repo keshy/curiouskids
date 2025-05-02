@@ -1,28 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Badge } from '@shared/schema';
-
-// Helper function to get badge image URL with fallbacks
-const getBadgeImageUrl = (badge: Badge): string => {
-  // Special mapping for milestone and special badges
-  if (badge.category === 'milestone' || badge.category === 'special') {
-    const imageName = badge.name.toLowerCase().replace(/\s+/g, '-');
-    return `/badges/${imageName}.svg`;
-  }
-  
-  // For category badges like science, math, reading, etc.
-  if (badge.category) {
-    // Try to use the category-specific image name pattern
-    if (badge.category === 'science') return '/badges/science-explorer.svg';
-    if (badge.category === 'math') return '/badges/math-whiz.svg';
-    if (badge.category === 'reading') return '/badges/reading-star.svg';
-    
-    // Fallback to just the category name
-    return `/badges/${badge.category}.svg`;
-  }
-  
-  // Default fallback
-  return '/badges/default.svg';
-};
+import { getBadgeImageUrl } from '@/lib/badgeUtils';
 
 interface BadgeNotificationProps {
   badge: Badge;
