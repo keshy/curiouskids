@@ -124,6 +124,24 @@ export const insertAchievementSchema = createInsertSchema(achievements).pick({
 export type InsertAchievement = z.infer<typeof insertAchievementSchema>;
 export type Achievement = typeof achievements.$inferSelect;
 
+// Audio files storage table for persistence
+export const audioFiles = pgTable("audio_files", {
+  id: serial("id").primaryKey(),
+  filename: text("filename").notNull().unique(),
+  content: text("content").notNull(), // Store as Base64 encoded text
+  mimeType: text("mime_type").notNull().default('audio/mpeg'),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const insertAudioFileSchema = createInsertSchema(audioFiles).pick({
+  filename: true,
+  content: true,
+  mimeType: true,
+});
+
+export type InsertAudioFile = z.infer<typeof insertAudioFileSchema>;
+export type AudioFile = typeof audioFiles.$inferSelect;
+
 // Define types for our API requests and responses
 export type AskRequest = {
   question: string;

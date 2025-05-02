@@ -119,11 +119,21 @@ export async function generateAudio(text: string): Promise<string> {
       input: text,
     });
 
+    // Get the audio content as a buffer
     const buffer = Buffer.from(await response.arrayBuffer());
-    const filename = `answer_${uuidv4()}.mp3`;
-    const filepath = path.join(audioDir, filename);
-    fs.writeFileSync(filepath, buffer);
-    return `/audio/${filename}`;
+    
+    try {
+      // First try to save to database for persistence
+      const { saveAudioToDatabase } = await import('./audio-service');
+      return await saveAudioToDatabase(buffer, 'audio/mpeg');
+    } catch (dbError) {
+      console.error("Error saving audio to database, falling back to filesystem:", dbError);
+      
+      // Fall back to file system if database storage fails
+      const { saveAudioToFilesystem } = await import('./audio-service');
+      return saveAudioToFilesystem(buffer);
+    }
+    
   } catch (error: any) {
     console.error("Error generating audio from OpenAI:", error);
     

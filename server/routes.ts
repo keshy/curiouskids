@@ -7,7 +7,48 @@ import { z } from "zod";
 import { insertQuestionSchema, AskResponse } from "@shared/schema";
 
 export async function registerRoutes(app: Express): Promise<Server> {
-  // Serve audio files from the public directory
+  // Endpoint to serve audio files from the database
+  app.get('/api/audio/:filename', async (req, res) => {
+    try {
+      const filename = req.params.filename;
+      
+      // Only MP3 files are supported
+      if (!filename.endsWith('.mp3')) {
+        return res.status(404).send('Not found');
+      }
+      
+      // Try to get the audio file from the database first
+      const { getAudioFromDatabase } = await import('./audio-service');
+      const audio = await getAudioFromDatabase(filename);
+      
+      if (audio) {
+        // Set appropriate headers
+        res.setHeader('Content-Type', audio.mimeType);
+        res.setHeader('Content-Disposition', `inline; filename="${filename}"`);
+        
+        // Send the file content as a response
+        return res.send(audio.content);
+      }
+      
+      // If not found in the database, try the filesystem as fallback
+      const filePath = path.join(process.cwd(), 'public', 'audio', filename);
+      if (fs.existsSync(filePath)) {
+        return res.sendFile(filePath, {
+          headers: {
+            'Content-Type': 'audio/mpeg',
+          }
+        });
+      }
+      
+      // File not found in database or filesystem
+      return res.status(404).send('Audio file not found');
+    } catch (error) {
+      console.error('Error serving audio file:', error);
+      res.status(500).send('Error serving audio file');
+    }
+  });
+  
+  // Legacy route to serve audio files from the filesystem
   app.use('/audio', (req, res, next) => {
     // Validate that the requested file is an MP3
     if (!req.url.endsWith('.mp3')) {
