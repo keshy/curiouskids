@@ -1,6 +1,7 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import path from "path";
+import fs from "fs";
 import { storage } from "./storage";
 import { processQuestion } from "./openai";
 import { z } from "zod";

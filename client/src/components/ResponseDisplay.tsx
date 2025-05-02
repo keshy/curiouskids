@@ -83,6 +83,11 @@ export default function ResponseDisplay({
     }
 
     const audio = audioRef.current;
+    
+    // Determine if the audio URL is using the new database format or the old filesystem format
+    const isNewDatabaseAudio = response.audioUrl.startsWith('/api/audio/');
+    
+    // Set the correct source URL
     audio.src = response.audioUrl;
 
     const handleAudioEnd = () => {
@@ -98,6 +103,9 @@ export default function ResponseDisplay({
       setAudioProgress(0);
       setShouldShowPlayButton(true);
 
+      // Log additional details to help with debugging
+      console.warn(`Audio playback failed for URL: ${response.audioUrl} (${isNewDatabaseAudio ? 'database audio' : 'filesystem audio'})`);
+      
       if (textToSpeech && response.text) {
         speak(response.text);
       }

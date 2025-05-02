@@ -129,14 +129,14 @@ export const audioFiles = pgTable("audio_files", {
   id: serial("id").primaryKey(),
   filename: text("filename").notNull().unique(),
   content: text("content").notNull(), // Store as Base64 encoded text
-  mimeType: text("mime_type").notNull().default('audio/mpeg'),
+  mimeType: text("mime_type").notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
-export const insertAudioFileSchema = createInsertSchema(audioFiles).pick({
-  filename: true,
-  content: true,
-  mimeType: true,
+export const insertAudioFileSchema = createInsertSchema(audioFiles, {
+  content: z.string(),
+  mimeType: z.string(),
+  filename: z.string()
 });
 
 export type InsertAudioFile = z.infer<typeof insertAudioFileSchema>;

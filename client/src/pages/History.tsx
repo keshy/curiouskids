@@ -167,13 +167,28 @@ export default function History() {
                   {/* Only show audio for logged-in users, not guests */}
                   {q.audioUrl && !user?.isGuest && (
                     <div className="mt-4 flex justify-center">
-                      <audio 
-                        controls 
-                        src={q.audioUrl}
-                        className="w-full max-w-md" 
-                      >
-                        Your browser does not support the audio element.
-                      </audio>
+                      <div className="w-full max-w-md">
+                        <p className="text-xs text-gray-500 mb-1 text-center">
+                          {q.audioUrl.startsWith('/api/audio/') ? 'Enhanced persistent audio' : 'Standard audio'}
+                        </p>
+                        <audio 
+                          controls 
+                          src={q.audioUrl}
+                          className="w-full" 
+                          onError={(e) => {
+                            console.warn(`Failed to load audio: ${q.audioUrl}`);
+                            // Hide the audio player if it fails to load
+                            (e.target as HTMLAudioElement).style.display = 'none';
+                            // Show an error message
+                            const errorDiv = document.createElement('div');
+                            errorDiv.className = 'text-red-500 text-sm text-center mt-2';
+                            errorDiv.innerText = 'Audio is no longer available';
+                            (e.target as HTMLAudioElement).parentNode?.appendChild(errorDiv);
+                          }}
+                        >
+                          Your browser does not support the audio element.
+                        </audio>
+                      </div>
                     </div>
                   )}
                   
