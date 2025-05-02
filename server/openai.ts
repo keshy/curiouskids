@@ -35,8 +35,14 @@ export async function generateAnswer(question: string, contentFilter: string): P
     });
 
     return response.choices[0].message.content || "I'm not sure about that. Ask me something else!";
-  } catch (error) {
+  } catch (error: any) {
     console.error("Error generating answer from OpenAI:", error);
+    
+    // Check if the error is due to API quota limits
+    if (error.status === 429 || (error.error?.code === 'insufficient_quota')) {
+      return "Our AI brain needs a little rest! The service is very busy right now. Please try again in a few minutes or ask a different question!";
+    }
+    
     return "I'm having trouble thinking right now. Let's try another question!";
   }
 }
@@ -64,13 +70,17 @@ async function generateContextualQuestions(question: string, answer: string): Pr
       .map(q => q.replace(/^\d+\.\s*/, ''))  // Remove leading numbers if present
       .slice(0, 3);
     return suggestions;
-  } catch (error) {
+  } catch (error: any) {
     console.error("Error generating contextual questions:", error);
-    return [
+    
+    // Default suggestions for all error cases
+    const defaultSuggestions = [
       "What else would you like to know?",
       "Can you tell me more about what interests you?",
       "Would you like to learn about something else?"
     ];
+    
+    return defaultSuggestions;
   }
 }
 
@@ -87,9 +97,17 @@ export async function generateImage(prompt: string): Promise<string> {
     });
 
     return response.data[0].url || "";
-  } catch (error) {
+  } catch (error: any) {
     console.error("Error generating image from OpenAI:", error);
-    return "https://images.unsplash.com/photo-1606167668584-78701c57f13d?w=600&auto=format&fit=crop&q=80";
+    
+    // Different fallback images based on error type
+    if (error.status === 429 || (error.error?.code === 'insufficient_quota')) {
+      // For rate limit errors, use a specific fallback image that indicates the service is busy
+      return "https://images.unsplash.com/photo-1606167668584-78701c57f13d?w=600&auto=format&fit=crop&q=80";
+    }
+    
+    // For all other errors, use a generic educational image
+    return "https://images.unsplash.com/photo-1503676260728-1c00da094a0b?w=600&auto=format&fit=crop&q=80";
   }
 }
 
@@ -106,8 +124,15 @@ export async function generateAudio(text: string): Promise<string> {
     const filepath = path.join(audioDir, filename);
     fs.writeFileSync(filepath, buffer);
     return `/audio/${filename}`;
-  } catch (error) {
+  } catch (error: any) {
     console.error("Error generating audio from OpenAI:", error);
+    
+    // Special handling for rate limit errors
+    if (error.status === 429 || (error.error?.code === 'insufficient_quota')) {
+      console.warn("Rate limit reached for audio generation. Falling back to browser TTS.");
+    }
+    
+    // Return empty string to allow fallback to browser's TTS
     return "";
   }
 }
@@ -119,19 +144,23 @@ export async function processQuestion(
   generateAud: boolean = true
 ): Promise<{ text: string; imageUrl: string; audioUrl?: string; suggestedQuestions?: string[] }> {
   try {
+    // Generate the answer text first
     const answer = await generateAnswer(question, contentFilter);
     
+    // Generate image if requested
     let imageUrl = "";
     if (generateImg) {
       const imagePrompt = `${question} - ${answer.substring(0, 100)}`;
       imageUrl = await generateImage(imagePrompt);
     }
 
+    // Generate audio if requested
     let audioUrl = "";
     if (generateAud) {
       audioUrl = await generateAudio(answer);
     }
     
+    // Generate follow-up questions
     const suggestedQuestions = await generateContextualQuestions(question, answer);
     
     return {
@@ -140,13 +169,26 @@ export async function processQuestion(
       audioUrl: audioUrl,
       suggestedQuestions: suggestedQuestions
     };
-  } catch (error) {
+  } catch (error: any) {
     console.error("Error processing question:", error);
+    
+    // Customized error response based on the error type
+    let errorMessage = "I'm sorry, I couldn't understand that question. Can you ask me something else?";
+    
+    // If it's a rate limit or quota exceeded error
+    if (error.status === 429 || (error.error?.code === 'insufficient_quota')) {
+      errorMessage = "Our AI brain is a bit tired right now! The service is very busy. Please try again in a few minutes or ask a different question!";
+    }
+    
     return {
-      text: "I'm sorry, I couldn't understand that question. Can you ask me something else?",
-      imageUrl: "",
+      text: errorMessage,
+      imageUrl: "https://images.unsplash.com/photo-1606167668584-78701c57f13d?w=600&auto=format&fit=crop&q=80",
       audioUrl: "",
-      suggestedQuestions: []
+      suggestedQuestions: [
+        "What else would you like to know?",
+        "Can you tell me more about what interests you?",
+        "Would you like to learn about something else?"
+      ]
     };
   }
 }
