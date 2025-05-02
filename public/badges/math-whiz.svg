@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="200" height="200" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#F59E0B;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#EF4444;stop-opacity:1" />
+    </linearGradient>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="4" stdDeviation="6" flood-opacity="0.3" />
+    </filter>
+  </defs>
+  
+  <!-- Background Circle -->
+  <circle cx="100" cy="100" r="85" fill="url(#grad)" filter="url(#shadow)" />
+  <circle cx="100" cy="100" r="75" fill="#ffffff" opacity="0.2" />
+  
+  <!-- Plus Symbol -->
+  <rect x="65" y="95" width="70" height="10" rx="5" fill="#ffffff" />
+  <rect x="95" y="65" width="10" height="70" rx="5" fill="#ffffff" />
+  
+  <!-- Circle for Pi -->
+  <circle cx="60" cy="140" r="15" fill="#ffffff" fill-opacity="0.8" />
+  <text x="60" y="147" font-family="serif" font-size="20" font-weight="bold" 
+        text-anchor="middle" fill="#F59E0B">π</text>
+  
+  <!-- Square Root -->
+  <path d="M130 65 L140 65 L150 85 L160 65 L170 65" 
+        fill="none" stroke="#ffffff" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" />
+  <path d="M130 65 L135 85" 
+        fill="none" stroke="#ffffff" stroke-width="5" stroke-linecap="round" />
+        
+  <!-- Division Symbol -->
+  <circle cx="145" cy="130" r="5" fill="#ffffff" />
+  <circle cx="145" cy="150" r="5" fill="#ffffff" />
+  <rect x="130" y="138" width="30" height="4" rx="2" fill="#ffffff" />
+  
+  <!-- Times Symbol -->
+  <path d="M55 60 L75 80" fill="none" stroke="#ffffff" stroke-width="5" stroke-linecap="round" />
+  <path d="M75 60 L55 80" fill="none" stroke="#ffffff" stroke-width="5" stroke-linecap="round" />
+</svg>

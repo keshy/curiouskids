@@ -26,8 +26,10 @@ export default function EarnedBadgesDisplay() {
       try {
         setLoading(true);
         const data = await apiRequest<BadgesResponse>(`/api/badges`);
+        console.log("Badge data received:", data);
         
         if (data && Array.isArray(data.earnedBadges)) {
+          console.log("Earned badges:", data.earnedBadges);
           setEarnedBadges(data.earnedBadges);
         } else {
           console.warn("Unexpected badge data format:", data);
@@ -83,12 +85,17 @@ export default function EarnedBadgesDisplay() {
             >
               <div className="w-12 h-12 rounded-full overflow-hidden mb-1 group hover:scale-110 transition-transform">
                 <img 
-                  src={badge.imageUrl || `/badges/${badge.category}.svg`} 
+                  src={badge.imageUrl || `/badges/${badge.category.replace(/-/g, '_')}.svg`} 
                   alt={badge.name}
                   className="w-full h-full object-cover"
                   onError={(e) => {
-                    // Fallback for missing images
-                    (e.target as HTMLImageElement).src = '/badges/default.svg';
+                    // Try the category name with underscore if imageUrl fails
+                    if (badge.category) {
+                      (e.target as HTMLImageElement).src = `/badges/${badge.category.replace(/-/g, '_')}.svg`;
+                    } else {
+                      // Final fallback
+                      (e.target as HTMLImageElement).src = '/badges/default.svg';
+                    }
                   }}
                 />
               </div>
