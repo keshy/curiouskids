@@ -232,7 +232,7 @@ export default function AskMeBuddy() {
         ))}
       </div>
 
-      <div className="container mx-auto px-4 py-8 max-w-3xl">
+      <div className="max-w-3xl mx-auto">
         <Header onOpenSettings={handleOpenSettings} />
         
         <MascotCharacter 

@@ -46,7 +46,12 @@ export default function EarnedBadgesDisplay() {
   
   // Hide the badges section if user is guest or has no badges
   useEffect(() => {
-    setIsVisible(user && !user.isGuest && earnedBadges.length > 0);
+    if (!user) {
+      setIsVisible(false);
+      return;
+    }
+    
+    setIsVisible(!user.isGuest && earnedBadges.length > 0);
   }, [user, earnedBadges]);
   
   if (!isVisible) {
