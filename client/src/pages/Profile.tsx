@@ -4,10 +4,17 @@ import { useAuth } from "@/contexts/AuthContext";
 import { apiRequest } from "@/lib/queryClient";
 import { Badge } from "@shared/schema";
 
+// Define the structure received from the server
+interface BadgesResponse {
+  earnedBadges: Badge[];
+  availableBadges: Badge[];
+}
+
 export default function Profile() {
   const { user } = useAuth();
   const [_, navigate] = useLocation();
-  const [badges, setBadges] = useState<Badge[]>([]);
+  const [earnedBadges, setEarnedBadges] = useState<Badge[]>([]);
+  const [availableBadges, setAvailableBadges] = useState<Badge[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -31,12 +38,23 @@ export default function Profile() {
     const fetchUserBadges = async () => {
       try {
         setLoading(true);
-        const data = await apiRequest<Badge[]>(`/api/badges`);
-        setBadges(data || []);
+        const data = await apiRequest<BadgesResponse>(`/api/badges`);
+        
+        // Check if we got the expected response format
+        if (data && data.earnedBadges) {
+          setEarnedBadges(data.earnedBadges || []);
+          setAvailableBadges(data.availableBadges || []);
+        } else {
+          // Fallback if the data doesn't match our expected format
+          console.warn("Unexpected badge data format:", data);
+          setEarnedBadges([]);
+          setAvailableBadges([]);
+        }
       } catch (err) {
         console.error("Error fetching badges:", err);
         // Don't set error, just treat as empty badges
-        setBadges([]);
+        setEarnedBadges([]);
+        setAvailableBadges([]);
       } finally {
         setLoading(false);
       }
@@ -178,38 +196,71 @@ export default function Profile() {
             <div className="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 rounded-md">
               <p>{error}</p>
             </div>
-          ) : badges.length === 0 ? (
+          ) : earnedBadges.length === 0 ? (
             <div className="bg-blue-100 border-l-4 border-blue-500 text-blue-700 p-4 rounded-md">
               <p>You haven't earned any badges yet. Keep asking questions to earn your first badge!</p>
             </div>
           ) : (
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-              {badges.map(badge => (
-                <div key={badge.id} className="bg-gradient-to-b from-indigo-50 to-blue-50 rounded-lg p-4 flex flex-col items-center text-center border border-blue-100 hover:shadow-md transition-shadow">
-                  <div className="w-16 h-16 mb-2 flex items-center justify-center">
-                    <img 
-                      src={badge.imageUrl}
-                      alt={badge.name}
-                      className="max-w-full max-h-full"
-                      onError={(e) => {
-                        // Fallback for missing images
-                        (e.target as HTMLImageElement).src = '/badges/default.svg';
-                      }}
-                    />
+            <div>
+              {/* Earned badges section */}
+              <h3 className="text-xl font-bold text-indigo-700 mb-4">Earned Badges</h3>
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 mb-8">
+                {earnedBadges.map((badge: Badge) => (
+                  <div key={badge.id} className="bg-gradient-to-b from-indigo-50 to-blue-50 rounded-lg p-4 flex flex-col items-center text-center border border-blue-100 hover:shadow-md transition-shadow">
+                    <div className="w-16 h-16 mb-2 flex items-center justify-center">
+                      <img 
+                        src={badge.imageUrl}
+                        alt={badge.name}
+                        className="max-w-full max-h-full"
+                        onError={(e) => {
+                          // Fallback for missing images
+                          (e.target as HTMLImageElement).src = '/badges/default.svg';
+                        }}
+                      />
+                    </div>
+                    <h3 className="font-bold text-gray-800">{badge.name}</h3>
+                    <p className="text-xs text-gray-600 mt-1">{badge.description}</p>
+                    <span className={`text-xs mt-1 px-2 py-1 rounded-full ${
+                      badge.rarity === 'legendary' ? 'bg-amber-100 text-amber-800' :
+                      badge.rarity === 'epic' ? 'bg-purple-100 text-purple-800' :
+                      badge.rarity === 'rare' ? 'bg-blue-100 text-blue-800' :
+                      badge.rarity === 'uncommon' ? 'bg-green-100 text-green-800' :
+                      'bg-gray-100 text-gray-800'
+                    }`}>
+                      {badge.rarity}
+                    </span>
                   </div>
-                  <h3 className="font-bold text-gray-800">{badge.name}</h3>
-                  <p className="text-xs text-gray-600 mt-1">{badge.description}</p>
-                  <span className={`text-xs mt-1 px-2 py-1 rounded-full ${
-                    badge.rarity === 'legendary' ? 'bg-amber-100 text-amber-800' :
-                    badge.rarity === 'epic' ? 'bg-purple-100 text-purple-800' :
-                    badge.rarity === 'rare' ? 'bg-blue-100 text-blue-800' :
-                    badge.rarity === 'uncommon' ? 'bg-green-100 text-green-800' :
-                    'bg-gray-100 text-gray-800'
-                  }`}>
-                    {badge.rarity}
-                  </span>
-                </div>
-              ))}
+                ))}
+              </div>
+
+              {/* Available badges section */}
+              {availableBadges.length > 0 && (
+                <>
+                  <h3 className="text-xl font-bold text-gray-700 mb-4">Badges to Collect</h3>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+                    {availableBadges.map((badge: Badge) => (
+                      <div key={badge.id} className="bg-gradient-to-b from-gray-50 to-gray-100 rounded-lg p-4 flex flex-col items-center text-center border border-gray-200 hover:shadow-md transition-shadow opacity-70">
+                        <div className="w-16 h-16 mb-2 flex items-center justify-center grayscale">
+                          <img 
+                            src={badge.imageUrl}
+                            alt={badge.name}
+                            className="max-w-full max-h-full"
+                            onError={(e) => {
+                              // Fallback for missing images
+                              (e.target as HTMLImageElement).src = '/badges/default.svg';
+                            }}
+                          />
+                        </div>
+                        <h3 className="font-bold text-gray-700">{badge.name}</h3>
+                        <p className="text-xs text-gray-500 mt-1">{badge.description}</p>
+                        <span className={`text-xs mt-1 px-2 py-1 rounded-full bg-gray-200 text-gray-600`}>
+                          {badge.rarity}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </>
+              )}
             </div>
           )}
         </div>
