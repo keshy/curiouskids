@@ -31,6 +31,7 @@ export default function QuestionInput({
     stopListening, 
     isSupported, 
     isMobile,
+    isSilkBrowser,
     error
   } = useSpeechRecognition({
     onResult: (result) => {
@@ -140,7 +141,23 @@ export default function QuestionInput({
         )}
         
         {/* Voice input button - show for all supported browsers, including mobile, but ONLY for logged-in users */}
-        {!isListening && !isLoading && isSupported && !isGuestUser && (
+        {/* Specific message for Amazon Silk browser users */}
+        {!isListening && !isLoading && isSilkBrowser && !isGuestUser && (
+          <div className="flex flex-col items-center mb-4">
+            <div className="text-center p-4 bg-orange-50 border-2 border-orange-200 rounded-xl max-w-md">
+              <div className="flex items-center justify-center mb-2">
+                <i className="ri-information-line text-orange-500 text-2xl mr-2"></i>
+                <h3 className="text-xl font-semibold text-orange-700">Amazon Fire Tablet Detected</h3>
+              </div>
+              <p className="text-gray-700 mb-3">
+                Voice input is not supported on Amazon Silk browser. Please use the text input option below or try Chrome browser for voice features.
+              </p>
+            </div>
+          </div>
+        )}
+        
+        {/* Voice input button - show for all supported browsers, including mobile, but ONLY for logged-in users */}
+        {!isListening && !isLoading && isSupported && !isGuestUser && !isSilkBrowser && (
           <div className="flex flex-col items-center">
             <button 
               onClick={handleStartRecording}
