@@ -211,7 +211,7 @@ export default function QuestionInput({
               <i className="ri-mic-line text-white text-3xl"></i>
             </div>
             <p className="text-xl mb-1">I'm listening...</p>
-            <p className="text-xs text-gray-500 mb-2">I'll automatically stop when you're done speaking</p>
+            <p className="text-xs text-gray-500 mb-2">Take your time! I'll wait 6 seconds after you finish speaking before submitting</p>
             {transcript && (
               <p className="my-2 text-lg text-gray-600 italic">"{transcript}"</p>
             )}

@@ -68,7 +68,7 @@ export default function useSpeechRecognition({
   // State to track silence detection
   const [lastSpeechTimestamp, setLastSpeechTimestamp] = useState<number | null>(null);
   const [silenceTimer, setSilenceTimer] = useState<number | null>(null);
-  const SILENCE_TIMEOUT = 3000; // 3 seconds of silence before auto-submit
+  const SILENCE_TIMEOUT = 6000; // 6 seconds of silence before auto-submit - longer for better user experience
 
   // Define the SpeechRecognition constructor
   const SpeechRecognition = 
