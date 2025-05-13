@@ -123,7 +123,7 @@ export default function ResponseDisplay({
 
   const handlePlay = () => {
     if (!response) return;
-
+    
     if (response.audioUrl && audioRef.current) {
       if (!isPlaying) {
         audioRef.current.play()
