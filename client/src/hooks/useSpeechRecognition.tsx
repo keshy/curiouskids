@@ -81,11 +81,22 @@ export default function useSpeechRecognition({
   // Check if this is likely a mobile device
   const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
   
-  // Check specifically for Amazon Silk browser
+  // Check specifically for problematic browsers
   const isSilkBrowser = /silk/i.test(navigator.userAgent);
+  const isSamsungBrowser = /SamsungBrowser/i.test(navigator.userAgent);
+  const isUCBrowser = /UCBrowser/i.test(navigator.userAgent);
+  const isOldAndroid = /Android 4|Android 5/i.test(navigator.userAgent);
   
-  // Speech recognition is supported if the browser supports it, but Amazon Silk has issues
-  const isSupported = isBrowserSupported && !isSilkBrowser;
+  // Check for iOS version - older iOS has issues with speech recognition
+  const isOlderIOS = /iPhone|iPad|iPod/.test(navigator.userAgent) && 
+                    (/OS ([4-9]|1[0-2])_/.test(navigator.userAgent) || 
+                     /Version\/([4-9]|1[0-3])/.test(navigator.userAgent));
+  
+  // List of problematic browsers for speech recognition
+  const isProblematicBrowser = isSilkBrowser || isSamsungBrowser || isUCBrowser || isOldAndroid || isOlderIOS;
+  
+  // Speech recognition is supported if the browser supports it and is not a problematic browser
+  const isSupported = isBrowserSupported && !isProblematicBrowser;
 
   // Use state to store the recognition instance
   const [recognitionInstance, setRecognitionInstance] = useState<SpeechRecognition | null>(null);
@@ -262,6 +273,7 @@ export default function useSpeechRecognition({
     isMobile,
     isSilkBrowser,
     isBrowserSupported,
+    isProblematicBrowser,
     startListening,
     stopListening,
   };

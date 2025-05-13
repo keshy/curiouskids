@@ -125,13 +125,25 @@ export async function generateAudio(text: string): Promise<string> {
     try {
       // First try to save to database for persistence
       const { saveAudioToDatabase } = await import('./audio-service');
+      console.log("Saving audio to database for better persistence");
       return await saveAudioToDatabase(buffer, 'audio/mpeg');
     } catch (dbError) {
-      console.error("Error saving audio to database, falling back to filesystem:", dbError);
+      console.error("Error saving audio to database, attempting retry:", dbError);
       
-      // Fall back to file system if database storage fails
-      const { saveAudioToFilesystem } = await import('./audio-service');
-      return saveAudioToFilesystem(buffer);
+      // Retry database save once more with a delay
+      try {
+        await new Promise(resolve => setTimeout(resolve, 500));
+        const { saveAudioToDatabase } = await import('./audio-service');
+        console.log("Retrying saving audio to database");
+        return await saveAudioToDatabase(buffer, 'audio/mpeg');
+      } catch (retryError) {
+        console.error("Database retry failed, falling back to filesystem:", retryError);
+        
+        // Fall back to file system if database storage fails after retry
+        const { saveAudioToFilesystem } = await import('./audio-service');
+        console.warn("Using filesystem storage for audio, this may not persist across restarts");
+        return saveAudioToFilesystem(buffer);
+      }
     }
     
   } catch (error: any) {

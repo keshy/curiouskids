@@ -32,6 +32,7 @@ export default function QuestionInput({
     isSupported, 
     isMobile,
     isSilkBrowser,
+    isProblematicBrowser,
     error
   } = useSpeechRecognition({
     onResult: (result) => {
