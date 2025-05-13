@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
-import { useLocation } from "wouter";
+import { useLocation, Link } from "wouter";
 import { apiRequest } from "@/lib/queryClient";
 import { Badge } from "@shared/schema";
 import { getBadgeImageUrl } from "@/lib/badgeUtils";
@@ -97,25 +97,77 @@ export default function UserMenu() {
   return (
     <div className="relative" ref={menuRef}>
       {/* User Avatar & Button */}
-      <button
-        onClick={() => setIsMenuOpen(!isMenuOpen)}
-        className="flex items-center justify-center w-10 h-10 rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary transition-all hover:shadow-md"
-        style={{
-          background: user?.isGuest
-            ? "linear-gradient(to right, #f59e0b, #d97706)"
-            : "linear-gradient(to right, #4f46e5, #7c3aed)",
-        }}
-      >
-        {avatarUrl ? (
-          <img
-            src={avatarUrl}
-            alt={displayName}
-            className="w-10 h-10 rounded-full"
-          />
-        ) : (
-          <span className="text-white font-bold">{getInitials()}</span>
+      <div className="relative group">
+        <button
+          onClick={() => setIsMenuOpen(!isMenuOpen)}
+          onMouseEnter={() => !user?.isGuest && earnedBadges.length > 0 && setShowBadgeTooltip(true)}
+          onMouseLeave={() => setShowBadgeTooltip(false)}
+          className="flex items-center justify-center w-10 h-10 rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary transition-all hover:shadow-md"
+          style={{
+            background: user?.isGuest
+              ? "linear-gradient(to right, #f59e0b, #d97706)"
+              : "linear-gradient(to right, #4f46e5, #7c3aed)",
+          }}
+        >
+          {avatarUrl ? (
+            <img
+              src={avatarUrl}
+              alt={displayName}
+              className="w-10 h-10 rounded-full"
+            />
+          ) : (
+            <span className="text-white font-bold">{getInitials()}</span>
+          )}
+          
+          {/* Badge indicator dot for authenticated users with badges */}
+          {!user?.isGuest && earnedBadges.length > 0 && (
+            <div className="absolute -top-1 -right-1 w-4 h-4 bg-yellow-400 border-2 border-white rounded-full flex items-center justify-center">
+              <span className="text-[9px] font-bold text-yellow-800">{earnedBadges.length}</span>
+            </div>
+          )}
+        </button>
+        
+        {/* Badge tooltip */}
+        {!user?.isGuest && earnedBadges.length > 0 && showBadgeTooltip && (
+          <div className="absolute top-full right-0 mt-2 p-3 bg-white rounded-lg shadow-xl border border-gray-200 z-50 w-64">
+            <h3 className="text-sm font-bold text-gray-800 mb-2">Your Achievements ({earnedBadges.length})</h3>
+            <div className="flex flex-wrap gap-2">
+              {earnedBadges.slice(0, 6).map((badge) => (
+                <div 
+                  key={badge.id}
+                  className="group relative"
+                  title={badge.description}
+                >
+                  <div className="w-8 h-8 rounded-full overflow-hidden border border-gray-200">
+                    <img 
+                      src={getBadgeImageUrl(badge)}
+                      alt={badge.name}
+                      className="w-full h-full object-cover"
+                      onError={(e) => {
+                        (e.target as HTMLImageElement).src = '/badges/default.svg';
+                      }}
+                    />
+                  </div>
+                </div>
+              ))}
+              {earnedBadges.length > 6 && (
+                <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-xs font-medium text-gray-500 border border-gray-200">
+                  +{earnedBadges.length - 6}
+                </div>
+              )}
+            </div>
+            <div className="mt-2 text-xs text-right">
+              <Link 
+                href="/profile"
+                className="text-primary hover:underline"
+                onClick={() => setShowBadgeTooltip(false)}
+              >
+                View all in profile →
+              </Link>
+            </div>
+          </div>
         )}
-      </button>
+      </div>
 
       {/* Dropdown Menu */}
       {isMenuOpen && (
@@ -125,6 +177,36 @@ export default function UserMenu() {
             <p className="text-sm text-gray-600">
               {user?.isGuest ? "Guest Account" : "Signed in with Google"}
             </p>
+            {!user?.isGuest && earnedBadges.length > 0 && (
+              <div className="mt-2 flex items-center gap-1">
+                <span className="text-xs text-indigo-600 font-medium">
+                  {earnedBadges.length} Badge{earnedBadges.length !== 1 ? 's' : ''} earned
+                </span>
+                <div className="flex -space-x-1.5">
+                  {earnedBadges.slice(0, 3).map((badge) => (
+                    <div 
+                      key={badge.id}
+                      className="w-5 h-5 rounded-full border border-white"
+                      title={badge.name}
+                    >
+                      <img 
+                        src={getBadgeImageUrl(badge)}
+                        alt={badge.name}
+                        className="w-full h-full object-cover rounded-full"
+                        onError={(e) => {
+                          (e.target as HTMLImageElement).src = '/badges/default.svg';
+                        }}
+                      />
+                    </div>
+                  ))}
+                  {earnedBadges.length > 3 && (
+                    <div className="w-5 h-5 rounded-full bg-indigo-100 border border-white flex items-center justify-center">
+                      <span className="text-[8px] font-bold text-indigo-800">+{earnedBadges.length - 3}</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
           </div>
 
           <div className="p-2">
