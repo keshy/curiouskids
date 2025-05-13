@@ -83,7 +83,7 @@ export default function UserMenu() {
 
       {/* Dropdown Menu */}
       {isMenuOpen && (
-        <div className="absolute right-0 mt-2 w-56 rounded-xl overflow-hidden bg-gradient-to-br from-indigo-50 to-pink-50 shadow-lg border border-indigo-200 z-10">
+        <div className="absolute right-0 mt-2 w-56 rounded-xl overflow-hidden bg-gradient-to-br from-indigo-50 to-pink-50 shadow-lg border border-indigo-200 z-50">
           <div className="p-4 border-b border-indigo-100">
             <p className="font-bold text-primary">{displayName}</p>
             <p className="text-sm text-gray-600">
