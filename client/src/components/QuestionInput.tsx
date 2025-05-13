@@ -175,6 +175,12 @@ export default function QuestionInput({
                   <i className="ri-information-line mr-1"></i>
                   Voice input may work differently on mobile devices. Make sure to grant microphone permissions when prompted.
                 </p>
+                {isProblematicBrowser && (
+                  <div className="mt-2 p-2 bg-orange-100 border border-orange-300 rounded text-sm text-orange-800">
+                    <i className="ri-alert-line mr-1"></i>
+                    Your browser may have limited voice support. For best results, try using Chrome or Safari on a newer device.
+                  </div>
+                )}
               </div>
             )}
           </div>

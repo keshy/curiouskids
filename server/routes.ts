@@ -26,6 +26,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         // Set appropriate headers
         res.setHeader('Content-Type', audio.mimeType);
         res.setHeader('Content-Disposition', `inline; filename="${filename}"`);
+        res.setHeader('Cache-Control', 'public, max-age=31536000'); // Cache for 1 year
         
         // Send the file content as a response
         return res.send(audio.content);
@@ -34,18 +35,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // If not found in the database, try the filesystem as fallback
       const filePath = path.join(process.cwd(), 'public', 'audio', filename);
       if (fs.existsSync(filePath)) {
+        console.log(`Serving filesystem audio: ${filename}`);
         return res.sendFile(filePath, {
           headers: {
             'Content-Type': 'audio/mpeg',
+            'Cache-Control': 'public, max-age=31536000' // Cache for 1 year
           }
         });
       }
       
-      // File not found in database or filesystem
-      return res.status(404).send('Audio file not found');
-    } catch (error) {
+      // For missing file paths, return a graceful error with a specific status code
+      console.warn(`Audio file not found in database or filesystem: ${filename}`);
+      
+      // Return a 404 with a JSON response that the client can handle better
+      return res.status(404).json({
+        error: 'audio_not_found',
+        message: 'This audio file is no longer available.',
+        filename: filename
+      });
+    } catch (error: any) {
       console.error('Error serving audio file:', error);
-      res.status(500).send('Error serving audio file');
+      res.status(500).json({
+        error: 'audio_error',
+        message: 'Error serving audio file',
+        details: error.message || 'Unknown error'
+      });
     }
   });
   

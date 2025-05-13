@@ -169,7 +169,7 @@ export default function History() {
                     <div className="mt-4 flex justify-center">
                       <div className="w-full max-w-md">
                         <p className="text-xs text-gray-500 mb-1 text-center">
-                          {q.audioUrl.startsWith('/api/audio/') ? 'Enhanced persistent audio' : 'Standard audio'}
+                          {q.audioUrl?.startsWith('/api/audio/') ? 'Enhanced persistent audio' : 'Session-only audio (may not persist)'}
                         </p>
                         <audio 
                           controls 
@@ -179,10 +179,20 @@ export default function History() {
                             console.warn(`Failed to load audio: ${q.audioUrl}`);
                             // Hide the audio player if it fails to load
                             (e.target as HTMLAudioElement).style.display = 'none';
-                            // Show an error message
+                            
+                            // Show a friendly error message based on the URL type
                             const errorDiv = document.createElement('div');
-                            errorDiv.className = 'text-red-500 text-sm text-center mt-2';
-                            errorDiv.innerText = 'Audio is no longer available';
+                            
+                            if (q.audioUrl?.startsWith('/api/audio/')) {
+                              // Database-stored audio should persist, so this is odd
+                              errorDiv.className = 'bg-yellow-50 border border-yellow-200 p-2 rounded text-yellow-800 text-sm text-center mt-2';
+                              errorDiv.innerHTML = '<i class="ri-information-line mr-1"></i> The audio playback failed to load. Please try again later.';
+                            } else {
+                              // Filesystem-stored audio that no longer exists after restart
+                              errorDiv.className = 'bg-gray-50 border border-gray-200 p-2 rounded text-gray-600 text-sm text-center mt-2';
+                              errorDiv.innerHTML = '<i class="ri-time-line mr-1"></i> This audio is no longer available after app restart.';
+                            }
+                            
                             (e.target as HTMLAudioElement).parentNode?.appendChild(errorDiv);
                           }}
                         >
