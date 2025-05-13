@@ -2,21 +2,13 @@ import React, { createContext, useState, useEffect, useContext } from 'react';
 import { User } from 'firebase/auth';
 import { subscribeToAuthChanges, signInWithGoogle, signOut as firebaseSignOut } from '@/lib/firebase';
 
-// Define the type for a guest user
-export interface GuestUser {
-  isGuest: true;
-  id: string; // Generate a unique ID for guests
-  displayName: string;
-}
-
 // Define the type for an authenticated user
 export interface AuthUser {
-  isGuest: false;
   firebaseUser: User;
 }
 
-// Combined user type
-export type AppUser = GuestUser | AuthUser;
+// User type is now only authenticated users
+export type AppUser = AuthUser;
 
 // Context type
 interface AuthContextType {
@@ -24,17 +16,11 @@ interface AuthContextType {
   loading: boolean;
   error: string | null;
   signInWithGoogle: () => Promise<void>;
-  signInAsGuest: () => void;
   signOut: () => Promise<void>;
 }
 
 // Create the context
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
-
-// Generate a unique ID for guests
-const generateGuestId = () => {
-  return `guest_${Math.random().toString(36).substring(2, 9)}`;
-};
 
 // Provider component
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -74,14 +60,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       
       // Set user state
       setUser({
-        isGuest: false,
         firebaseUser,
       });
     } catch (error) {
       console.error('Backend authentication error:', error);
       // Still set the user state so the app is usable, but in a degraded state
       setUser({
-        isGuest: false,
         firebaseUser,
       });
       // Store error message
@@ -103,17 +87,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           console.error('Authentication error:', error);
         }
       } else {
-        // Check if there's a saved guest user in localStorage
-        const savedGuestUser = localStorage.getItem('guestUser');
-        if (savedGuestUser) {
-          setUser(JSON.parse(savedGuestUser));
-        } else {
-          setUser(null);
-        }
+        // No authenticated user
+        setUser(null);
       }
       
       setLoading(false);
     });
+
+    // Clean up any guest user data that might be in localStorage
+    localStorage.removeItem('guestUser');
 
     // Cleanup subscription on unmount
     return () => unsubscribe();
@@ -134,32 +116,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  // Sign in as guest
-  const handleGuestSignIn = () => {
-    const guestUser: GuestUser = {
-      isGuest: true,
-      id: generateGuestId(),
-      displayName: 'Guest User',
-    };
-    
-    // Save guest user to localStorage
-    localStorage.setItem('guestUser', JSON.stringify(guestUser));
-    setUser(guestUser);
-  };
-
   // Sign out
   const handleSignOut = async () => {
     try {
       setLoading(true);
       setError(null);
       
-      if (user && !user.isGuest) {
-        // Sign out from Firebase
-        await firebaseSignOut();
-      }
-      
-      // Remove guest user from localStorage
-      localStorage.removeItem('guestUser');
+      // Sign out from Firebase
+      await firebaseSignOut();
       setUser(null);
     } catch (err: any) {
       setError(err.message || 'An error occurred during sign out');
@@ -174,7 +138,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     loading,
     error,
     signInWithGoogle: handleGoogleSignIn,
-    signInAsGuest: handleGuestSignIn,
     signOut: handleSignOut,
   };
 

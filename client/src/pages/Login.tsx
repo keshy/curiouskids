@@ -3,7 +3,7 @@ import { useLocation } from 'wouter';
 import { useAuth } from '@/contexts/AuthContext';
 
 export default function Login() {
-  const { signInWithGoogle, signInAsGuest, loading } = useAuth();
+  const { signInWithGoogle, loading } = useAuth();
   const [, setLocation] = useLocation();
 
   const handleGoogleSignIn = async () => {
@@ -13,11 +13,6 @@ export default function Login() {
     } catch (error) {
       console.error('Error signing in with Google', error);
     }
-  };
-
-  const handleGuestSignIn = () => {
-    signInAsGuest();
-    setLocation('/');
   };
 
   return (
@@ -32,7 +27,7 @@ export default function Login() {
 
         <div className="space-y-6">
           <div className="bg-white/70 rounded-xl p-6 shadow-md border border-purple-200">
-            <h2 className="text-2xl font-bold text-center mb-4 text-primary">Choose how to continue</h2>
+            <h2 className="text-2xl font-bold text-center mb-4 text-primary">Sign in to continue</h2>
             
             <div className="flex flex-col space-y-4">
               <button
@@ -49,34 +44,16 @@ export default function Login() {
                 Sign in with Google
                 {loading && <span className="ml-2 animate-spin">⟳</span>}
               </button>
-              
-              <div className="relative flex items-center justify-center my-2">
-                <div className="border-t border-gray-300 flex-grow"></div>
-                <div className="mx-4 text-gray-500">or</div>
-                <div className="border-t border-gray-300 flex-grow"></div>
-              </div>
-              
-              <button
-                onClick={handleGuestSignIn}
-                disabled={loading}
-                className="button-press bg-gradient-to-r from-yellow-400 to-orange-400 hover:from-yellow-500 hover:to-orange-500 text-gray-800 font-bold py-4 px-6 rounded-full shadow-md transition-colors flex items-center justify-center"
-              >
-                <svg className="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                </svg>
-                Continue as Guest
-                {loading && <span className="ml-2 animate-spin">⟳</span>}
-              </button>
             </div>
           </div>
           
           <div className="bg-gradient-to-r from-purple-100 to-pink-100 p-4 rounded-xl border border-purple-200">
             <h3 className="font-bold text-primary mb-2">Why sign in?</h3>
             <ul className="space-y-2 text-gray-700 pl-6 list-disc">
-              <li>Save your favorite questions and answers</li>
+              <li>Save your questions and answers history</li>
+              <li>Earn badges and track your learning journey</li>
+              <li>Use voice input to ask questions</li>
               <li>Get personalized learning recommendations</li>
-              <li>Track your progress and learning journey</li>
-              <li>Access special features for registered users</li>
             </ul>
           </div>
         </div>
