@@ -20,7 +20,7 @@ const ProtectedRoute = ({ component: Component, ...rest }: any) => {
   // Show nothing while checking auth status
   if (loading) return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
   
-  // If authenticated (either as guest or Google user), render the component
+  // If authenticated with Google, render the component
   if (user) return <Component {...rest} />;
   
   // Otherwise redirect to login
