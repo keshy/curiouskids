@@ -9,15 +9,13 @@ interface ResponseDisplayProps {
   isLoading: boolean;
   textToSpeech: boolean;
   onSpeakingEnd: () => void;
-  isGuestUser?: boolean; // Flag to check if user is a guest
 }
 
 export default function ResponseDisplay({ 
   response, 
   isLoading,
   textToSpeech,
-  onSpeakingEnd,
-  isGuestUser = false
+  onSpeakingEnd
 }: ResponseDisplayProps) {
   const [isPlaying, setIsPlaying] = useState(false);
   const [audioProgress, setAudioProgress] = useState(0);
@@ -41,11 +39,6 @@ export default function ResponseDisplay({
   }, [response]);
 
   useEffect(() => {
-    // Skip audio playback for guest users
-    if (isGuestUser) {
-      return;
-    }
-    
     if (response && textToSpeech && !isLoading) {
       setShouldShowPlayButton(true);
       if (response.audioUrl && audioRef.current) {
@@ -73,7 +66,7 @@ export default function ResponseDisplay({
         audioRef.current.pause();
       }
     };
-  }, [response, isLoading, textToSpeech, isGuestUser]);
+  }, [response, isLoading, textToSpeech]);
 
   useEffect(() => {
     if (!response?.audioUrl) return;
@@ -130,11 +123,6 @@ export default function ResponseDisplay({
 
   const handlePlay = () => {
     if (!response) return;
-    
-    // Skip audio playback for guest users
-    if (isGuestUser) {
-      return;
-    }
 
     if (response.audioUrl && audioRef.current) {
       if (!isPlaying) {
@@ -195,27 +183,8 @@ export default function ResponseDisplay({
         </div>
       ) : (
         <div>
-          {/* For guest users, show a message about signing in to unlock audio features */}
-          {response && isGuestUser && (
-            <div className="flex justify-center mb-4">
-              <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-3 flex items-center shadow-md border border-blue-200 max-w-md">
-                <div className="flex items-center gap-2 text-blue-800">
-                  <i className="ri-information-line text-xl"></i>
-                  <p className="text-sm">
-                    <span className="font-semibold">Sign in to unlock audio!</span> Listen to answers with friendly voice narration.
-                  </p>
-                  <Link to="/login" className="ml-2">
-                    <button className="button-press bg-blue-500 hover:bg-blue-600 text-white text-xs py-1 px-3 rounded-full">
-                      Sign In
-                    </button>
-                  </Link>
-                </div>
-              </div>
-            </div>
-          )}
-          
-          {/* For signed-in users, show the audio controls */}
-          {response && !isGuestUser && (
+          {/* Audio controls - available for all users */}
+          {response && (
             <div className="flex justify-center mb-4">
               <div className="bg-gradient-to-r from-indigo-200 to-blue-200 rounded-full p-3 flex items-center space-x-3 shadow-md border border-indigo-300">
                 <button 
