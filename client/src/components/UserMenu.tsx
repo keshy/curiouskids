@@ -1,11 +1,21 @@
 import React, { useState, useRef, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useLocation } from "wouter";
+import { apiRequest } from "@/lib/queryClient";
+import { Badge } from "@shared/schema";
+import { getBadgeImageUrl } from "@/lib/badgeUtils";
+
+interface BadgesResponse {
+  earnedBadges: Badge[];
+  availableBadges: Badge[];
+}
 
 export default function UserMenu() {
   const { user, signOut } = useAuth();
   const [, setLocation] = useLocation();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [earnedBadges, setEarnedBadges] = useState<Badge[]>([]);
+  const [showBadgeTooltip, setShowBadgeTooltip] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
   // Display name and avatar for both guest and authenticated users
@@ -31,11 +41,37 @@ export default function UserMenu() {
       .substring(0, 2);
   };
 
+  // Fetch user badges when user is logged in
+  useEffect(() => {
+    if (!user || user.isGuest) {
+      setEarnedBadges([]);
+      return;
+    }
+    
+    const fetchUserBadges = async () => {
+      try {
+        const data = await apiRequest<BadgesResponse>(`/api/badges`);
+        
+        if (data && Array.isArray(data.earnedBadges)) {
+          setEarnedBadges(data.earnedBadges);
+        } else {
+          setEarnedBadges([]);
+        }
+      } catch (err) {
+        console.error("Error fetching badges for user menu:", err);
+        setEarnedBadges([]);
+      }
+    };
+
+    fetchUserBadges();
+  }, [user]);
+  
   // Handle clicking outside to close menu
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
         setIsMenuOpen(false);
+        setShowBadgeTooltip(false);
       }
     };
 

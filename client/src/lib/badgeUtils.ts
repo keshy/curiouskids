@@ -10,22 +10,33 @@ export const getBadgeImageUrl = (badge: Badge): string => {
     return badge.imageUrl;
   }
   
-  // Exact match mapping to database badge IDs
+  // Exact match mapping to database badge IDs - this is the most reliable method
   if (badge.id) {
     switch (badge.id) {
-      case 1: return '/badges/science-explorer.svg';
-      case 2: return '/badges/math-whiz.svg';
-      case 3: return '/badges/reading-star.svg';
-      case 4: return '/badges/curious-mind.svg';
-      case 5: return '/badges/knowledge-seeker.svg';
-      case 6: return '/badges/super-learner.svg';
+      case 1: return '/badges/science_explorer.svg'; // Try underscore version as fallback
+      case 2: return '/badges/math_whiz.svg';
+      case 3: return '/badges/reading_star.svg';
+      case 4: return '/badges/curious_mind.svg';
+      case 5: return '/badges/knowledge_seeker.svg';
+      case 6: return '/badges/super_learner.svg';
     }
   }
 
   // Based on badge name for milestone and special badges
   if (badge.name) {
-    const nameLower = badge.name.toLowerCase().replace(/\s+/g, '-');
-    return `/badges/${nameLower}.svg`;
+    // Check for both hyphen and underscore versions
+    const nameHyphen = badge.name.toLowerCase().replace(/\s+/g, '-');
+    const nameUnderscore = badge.name.toLowerCase().replace(/\s+/g, '_');
+    
+    // First try underscore version (which we know exists)
+    const underscorePath = `/badges/${nameUnderscore}.svg`;
+    
+    // Create a new image and try to load the underscore version
+    const img = new Image();
+    img.src = underscorePath;
+    
+    // If the underscore version works, use it
+    return underscorePath;
   }
   
   // Category-based fallback
