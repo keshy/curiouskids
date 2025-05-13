@@ -80,18 +80,15 @@ export default function AskMeBuddy() {
     setSpeechBubbleText("Great question! Let me think...");
 
     try {
-      // Include the appropriate user ID in the request
+      // Include the user ID for authenticated users
       let userData = {};
       
-      if (user?.isGuest) {
-        // For guest users, include the guest ID
-        userData = { guestId: user.id };
-      } else if (user && !user.isGuest) {
+      if (user) {
         // For authenticated users, include the Firebase ID
         userData = { firebaseId: user.firebaseUser.uid };
       }
       
-      console.log("User data for question:", userData, "User type:", user?.isGuest ? "Guest" : "Authenticated");
+      console.log("User data for question:", userData, "User type:", "Authenticated");
       
       const res = await fetch('/api/ask', {
         method: 'POST',
@@ -247,7 +244,6 @@ export default function AskMeBuddy() {
           isListening={mascotState === "listening"}
           isLoading={isLoading}
           currentQuestion={isLoading ? question : undefined}
-          isGuestUser={user?.isGuest || false}
         />
         
         <ResponseDisplay 

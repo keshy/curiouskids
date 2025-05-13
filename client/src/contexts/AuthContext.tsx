@@ -5,6 +5,11 @@ import { subscribeToAuthChanges, signInWithGoogle, signOut as firebaseSignOut } 
 // Define the type for an authenticated user
 export interface AuthUser {
   firebaseUser: User;
+  // Add properties that were previously accessed via user.isGuest
+  // This makes it easier to migrate from the previous code
+  isGuest: false;
+  displayName: string;
+  id: string; // Firebase UID
 }
 
 // User type is now only authenticated users
@@ -58,15 +63,21 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const userData = await response.json();
       console.log('Successfully authenticated with backend', userData);
       
-      // Set user state
+      // Set user state with additional properties
       setUser({
         firebaseUser,
+        isGuest: false,
+        displayName: firebaseUser.displayName || 'User',
+        id: firebaseUser.uid
       });
     } catch (error) {
       console.error('Backend authentication error:', error);
       // Still set the user state so the app is usable, but in a degraded state
       setUser({
         firebaseUser,
+        isGuest: false,
+        displayName: firebaseUser.displayName || 'User',
+        id: firebaseUser.uid
       });
       // Store error message
       setError('Failed to authenticate with backend server. Some features may not work properly.');

@@ -9,7 +9,6 @@ interface QuestionInputProps {
   isListening: boolean;
   isLoading?: boolean;
   currentQuestion?: string;
-  isGuestUser?: boolean; // Flag to identify guest users
 }
 
 export default function QuestionInput({
@@ -19,7 +18,6 @@ export default function QuestionInput({
   isListening,
   isLoading = false,
   currentQuestion = "",
-  isGuestUser = false,
 }: QuestionInputProps) {
   const [textInput, setTextInput] = useState("");
   const [showError, setShowError] = useState(false);
@@ -121,29 +119,11 @@ export default function QuestionInput({
             </div>
           </div>
         )}
-        {/* Voice input feature for guest users (disabled with info message) */}
-        {!isListening && !isLoading && isGuestUser && (
-          <div className="flex flex-col items-center mb-4">
-            <div className="text-center p-4 bg-blue-50 border-2 border-blue-200 rounded-xl max-w-md">
-              <div className="flex items-center justify-center mb-2">
-                <i className="ri-lock-line text-blue-500 text-2xl mr-2"></i>
-                <h3 className="text-xl font-semibold text-blue-700">Voice Feature Locked</h3>
-              </div>
-              <p className="text-gray-700 mb-3">
-                Voice input is only available for signed-in users.
-              </p>
-              <Link to="/login">
-                <button className="button-press bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-6 rounded-full transition-colors">
-                  Sign In to Unlock
-                </button>
-              </Link>
-            </div>
-          </div>
-        )}
+        {/* Voice input section - removed guest mode restrictions */}
         
-        {/* Voice input button - show for all supported browsers, including mobile, but ONLY for logged-in users */}
+        {/* Voice input button - show for all supported browsers, including mobile */}
         {/* Specific message for Amazon Silk browser users */}
-        {!isListening && !isLoading && isSilkBrowser && !isGuestUser && (
+        {!isListening && !isLoading && isSilkBrowser && (
           <div className="flex flex-col items-center mb-4">
             <div className="text-center p-4 bg-orange-50 border-2 border-orange-200 rounded-xl max-w-md">
               <div className="flex items-center justify-center mb-2">
@@ -157,8 +137,8 @@ export default function QuestionInput({
           </div>
         )}
         
-        {/* Voice input button - show for all supported browsers, including mobile, but ONLY for logged-in users */}
-        {!isListening && !isLoading && isSupported && !isGuestUser && !isSilkBrowser && (
+        {/* Voice input button - show for all supported browsers, including mobile */}
+        {!isListening && !isLoading && isSupported && !isSilkBrowser && (
           <div className="flex flex-col items-center">
             <button 
               onClick={handleStartRecording}
