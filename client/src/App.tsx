@@ -51,6 +51,7 @@ function Router() {
         <Route path="/history" component={() => <ProtectedRoute component={History} />} />
         <Route path="/profile" component={() => <ProtectedRoute component={Profile} />} />
         <Route path="/settings" component={() => <ProtectedRoute component={Settings} />} />
+        <Route path="/social" component={() => <ProtectedRoute component={Social} />} />
         <Route component={NotFound} />
       </Switch>
     </>

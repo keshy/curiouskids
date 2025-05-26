@@ -41,7 +41,7 @@ export default function Social() {
   const addFriendMutation = useMutation({
     mutationFn: (email: string) => apiRequest(`/api/friends/invite`, {
       method: 'POST',
-      body: { email },
+      data: { email },
     }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/friends'] });
@@ -55,7 +55,7 @@ export default function Social() {
     mutationFn: (groupData: { name: string; description: string }) => 
       apiRequest(`/api/groups`, {
         method: 'POST',
-        body: groupData,
+        data: groupData,
       }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/groups'] });
@@ -147,7 +147,7 @@ export default function Social() {
                     <div key={friendship.id} className="bg-gradient-to-r from-blue-100 to-purple-100 p-4 rounded-xl border border-blue-200">
                       <div className="flex items-center space-x-3">
                         <img
-                          src={friendship.friend.photoUrl || '/default-avatar.png'}
+                          src={friendship.friend.photoURL || '/default-avatar.png'}
                           alt={friendship.friend.displayName || 'Friend'}
                           className="w-12 h-12 rounded-full border-2 border-white"
                         />

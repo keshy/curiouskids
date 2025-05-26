@@ -47,6 +47,18 @@ export interface IStorage {
   getAchievement(userId: number, name: string): Promise<Achievement | undefined>;
   createOrUpdateAchievement(achievement: InsertAchievement): Promise<Achievement>;
   updateAchievementProgress(userId: number, name: string, progress: number): Promise<Achievement>;
+  
+  // Social features
+  getFriends(userId: number): Promise<Array<Friendship & {friend: User}>>;
+  createFriendship(friendship: InsertFriendship): Promise<Friendship>;
+  updateFriendshipStatus(friendshipId: number, status: string): Promise<Friendship>;
+  
+  getGroups(userId: number): Promise<Array<Group & {memberCount: number, isOwner: boolean, isMember: boolean}>>;
+  createGroup(group: InsertGroup): Promise<Group>;
+  addGroupMember(member: InsertGroupMember): Promise<GroupMember>;
+  
+  getSharedQuestions(userId: number): Promise<Array<SharedQuestion & {question: Question, sharedByUser: User}>>;
+  shareQuestion(share: InsertSharedQuestion): Promise<SharedQuestion>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -304,6 +316,125 @@ export class DatabaseStorage implements IStorage {
       .returning();
     
     return updated;
+  }
+
+  // Social features implementation
+  async getFriends(userId: number): Promise<Array<Friendship & {friend: User}>> {
+    const result = await db
+      .select({
+        id: friendships.id,
+        userId: friendships.userId,
+        friendId: friendships.friendId,
+        status: friendships.status,
+        createdAt: friendships.createdAt,
+        acceptedAt: friendships.acceptedAt,
+        friend: users
+      })
+      .from(friendships)
+      .innerJoin(users, eq(friendships.friendId, users.id))
+      .where(eq(friendships.userId, userId));
+    
+    return result.map(row => ({
+      id: row.id,
+      userId: row.userId,
+      friendId: row.friendId,
+      status: row.status,
+      createdAt: row.createdAt,
+      acceptedAt: row.acceptedAt,
+      friend: row.friend
+    }));
+  }
+
+  async createFriendship(friendship: InsertFriendship): Promise<Friendship> {
+    const [result] = await db
+      .insert(friendships)
+      .values(friendship)
+      .returning();
+    return result;
+  }
+
+  async updateFriendshipStatus(friendshipId: number, status: string): Promise<Friendship> {
+    const [result] = await db
+      .update(friendships)
+      .set({ status, acceptedAt: status === 'accepted' ? new Date() : null })
+      .where(eq(friendships.id, friendshipId))
+      .returning();
+    return result;
+  }
+
+  async getGroups(userId: number): Promise<Array<Group & {memberCount: number, isOwner: boolean, isMember: boolean}>> {
+    // Get groups where user is a member
+    const userGroups = await db
+      .select({
+        group: groups,
+        memberCount: sql<number>`count(${groupMembers.userId})`,
+        isOwner: sql<boolean>`${groups.createdBy} = ${userId}`,
+        isMember: sql<boolean>`true`
+      })
+      .from(groups)
+      .innerJoin(groupMembers, eq(groups.id, groupMembers.groupId))
+      .where(eq(groupMembers.userId, userId))
+      .groupBy(groups.id);
+
+    return userGroups.map(row => ({
+      ...row.group,
+      memberCount: row.memberCount,
+      isOwner: row.isOwner,
+      isMember: row.isMember
+    }));
+  }
+
+  async createGroup(group: InsertGroup): Promise<Group> {
+    const [result] = await db
+      .insert(groups)
+      .values(group)
+      .returning();
+    
+    // Add creator as admin member
+    await db
+      .insert(groupMembers)
+      .values({
+        groupId: result.id,
+        userId: group.createdBy,
+        role: 'admin'
+      });
+    
+    return result;
+  }
+
+  async addGroupMember(member: InsertGroupMember): Promise<GroupMember> {
+    const [result] = await db
+      .insert(groupMembers)
+      .values(member)
+      .returning();
+    return result;
+  }
+
+  async getSharedQuestions(userId: number): Promise<Array<SharedQuestion & {question: Question, sharedByUser: User}>> {
+    const result = await db
+      .select({
+        share: sharedQuestions,
+        question: questions,
+        sharedByUser: users
+      })
+      .from(sharedQuestions)
+      .innerJoin(questions, eq(sharedQuestions.questionId, questions.id))
+      .innerJoin(users, eq(sharedQuestions.sharedBy, users.id))
+      .where(eq(sharedQuestions.sharedWith, userId));
+
+    return result.map(row => ({
+      ...row.share,
+      question: row.question,
+      sharedByUser: row.sharedByUser
+    }));
+  }
+
+  async shareQuestion(share: InsertSharedQuestion): Promise<SharedQuestion> {
+    const [result] = await db
+      .insert(sharedQuestions)
+      .values(share)
+      .returning();
+    return result;
   }
 }
 
