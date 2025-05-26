@@ -40,11 +40,13 @@ function setCachedResponse(cacheKey: string, response: any) {
   // Clean up old cache entries to prevent memory leaks
   if (responseCache.size > 500) {
     const now = Date.now();
-    for (const [key, value] of responseCache.entries()) {
+    const keysToDelete: string[] = [];
+    responseCache.forEach((value, key) => {
       if (now - value.timestamp > CACHE_TTL) {
-        responseCache.delete(key);
+        keysToDelete.push(key);
       }
-    }
+    });
+    keysToDelete.forEach(key => responseCache.delete(key));
   }
 }
 
@@ -233,12 +235,18 @@ export async function processQuestion(
     // Generate follow-up questions
     const suggestedQuestions = await generateContextualQuestions(question, answer);
     
-    return {
+    const result = {
       text: answer,
       imageUrl: imageUrl,
       audioUrl: audioUrl,
       suggestedQuestions: suggestedQuestions
     };
+    
+    // Cache the response for faster future access
+    setCachedResponse(cacheKey, result);
+    console.log("✅ Response cached for future speed improvements");
+    
+    return result;
   } catch (error: any) {
     console.error("Error processing question:", error);
     

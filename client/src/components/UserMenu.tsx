@@ -18,17 +18,11 @@ export default function UserMenu() {
   const [showBadgeTooltip, setShowBadgeTooltip] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
-  // Display name and avatar for both guest and authenticated users
-  const displayName = user
-    ? user.isGuest
-      ? user.displayName
-      : user.firebaseUser.displayName || "User"
-    : "Guest";
+  // Display name and avatar for authenticated users
+  const displayName = user?.firebaseUser.displayName || user?.displayName || "User";
 
-  // Avatar URL for authenticated users or placeholder for guests
-  const avatarUrl = user?.isGuest
-    ? null  // We'll use initials for guests
-    : user?.firebaseUser.photoURL || null;
+  // Avatar URL for authenticated users
+  const avatarUrl = user?.firebaseUser.photoURL || null;
 
   // Get initials for avatar fallback
   const getInitials = () => {
@@ -43,7 +37,7 @@ export default function UserMenu() {
 
   // Fetch user badges when user is logged in
   useEffect(() => {
-    if (!user || user.isGuest) {
+    if (!user) {
       setEarnedBadges([]);
       return;
     }

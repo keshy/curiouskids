@@ -17,7 +17,7 @@ export default function EarnedBadgesDisplay() {
   const [isVisible, setIsVisible] = useState(true);
 
   useEffect(() => {
-    if (!user || user.isGuest) {
+    if (!user) {
       setEarnedBadges([]);
       setLoading(false);
       return;
