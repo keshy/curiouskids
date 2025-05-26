@@ -84,7 +84,7 @@ export default function AskMeBuddy() {
     setQuestion(newQuestion);
     setIsLoading(true);
     // Keep the previous response for suggestions, but mark as loading
-    setResponse(prevResponse => prevResponse ? {...prevResponse, isLoading: true} : null);
+    setResponse((prevResponse: Response | null) => prevResponse ? {...prevResponse, isLoading: true} : null);
     setMascotState("thinking");
     setSpeechBubbleText("Great question! Let me think...");
 
@@ -252,7 +252,7 @@ export default function AskMeBuddy() {
           onSubmitQuestion={handleQuestion}
           isListening={mascotState === "listening"}
           isLoading={isLoading}
-          currentQuestion={isLoading ? question : undefined}
+          currentQuestion={isLoading ? question || undefined : undefined}
         />
         
         <ResponseDisplay 

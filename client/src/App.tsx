@@ -11,6 +11,7 @@ import Settings from "@/pages/Settings";
 import Login from "@/pages/Login";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import { QuestionProvider } from "@/contexts/QuestionContext";
+import GlobalQuestionStatus from "@/components/GlobalQuestionStatus";
 import { useEffect } from "react";
 
 // Protected route component - redirects to login if not authenticated
@@ -41,14 +42,17 @@ function Router() {
   }, [user, location]);
 
   return (
-    <Switch>
-      <Route path="/login" component={Login} />
-      <Route path="/" component={() => <ProtectedRoute component={Home} />} />
-      <Route path="/history" component={() => <ProtectedRoute component={History} />} />
-      <Route path="/profile" component={() => <ProtectedRoute component={Profile} />} />
-      <Route path="/settings" component={() => <ProtectedRoute component={Settings} />} />
-      <Route component={NotFound} />
-    </Switch>
+    <>
+      <GlobalQuestionStatus />
+      <Switch>
+        <Route path="/login" component={Login} />
+        <Route path="/" component={() => <ProtectedRoute component={Home} />} />
+        <Route path="/history" component={() => <ProtectedRoute component={History} />} />
+        <Route path="/profile" component={() => <ProtectedRoute component={Profile} />} />
+        <Route path="/settings" component={() => <ProtectedRoute component={Settings} />} />
+        <Route component={NotFound} />
+      </Switch>
+    </>
   );
 }
 
