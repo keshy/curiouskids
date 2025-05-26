@@ -7,6 +7,7 @@ import QuestionSuggestions from "./QuestionSuggestions";
 import ParentSettingsModal from "./ParentSettingsModal";
 import BadgeNotification from "./BadgeNotification";
 import { useAuth } from "@/contexts/AuthContext";
+import { useQuestion } from "@/contexts/QuestionContext";
 import type { Badge, Achievement } from "@shared/schema";
 
 export type MascotState = "idle" | "listening" | "thinking" | "speaking";
@@ -31,12 +32,20 @@ export type Settings = {
 
 export default function AskMeBuddy() {
   const { user } = useAuth(); // Get the current user
+  
+  // Use global question state to persist across navigation
+  const { 
+    currentQuestion: question, 
+    isProcessing: isLoading, 
+    response, 
+    setCurrentQuestion: setQuestion, 
+    setIsProcessing: setIsLoading, 
+    setResponse 
+  } = useQuestion();
+  
   const [mascotState, setMascotState] = useState<MascotState>("idle");
   const [speechBubbleText, setSpeechBubbleText] = useState<string>("Hi there! What would you like to know?");
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
-  const [response, setResponse] = useState<Response | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
-  const [question, setQuestion] = useState("");
   const [earnedBadge, setEarnedBadge] = useState<Badge | null>(null);
   const [showBadgeNotification, setShowBadgeNotification] = useState(false);
   const [settings, setSettings] = useState<Settings>({

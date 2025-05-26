@@ -10,6 +10,7 @@ import Profile from "@/pages/Profile";
 import Settings from "@/pages/Settings";
 import Login from "@/pages/Login";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
+import { QuestionProvider } from "@/contexts/QuestionContext";
 import { useEffect } from "react";
 
 // Protected route component - redirects to login if not authenticated
@@ -55,10 +56,12 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
-        <TooltipProvider>
-          <Toaster />
-          <Router />
-        </TooltipProvider>
+        <QuestionProvider>
+          <TooltipProvider>
+            <Toaster />
+            <Router />
+          </TooltipProvider>
+        </QuestionProvider>
       </AuthProvider>
     </QueryClientProvider>
   );
