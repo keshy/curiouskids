@@ -5,7 +5,62 @@ import fs from "fs";
 import { storage } from "./storage";
 import { processQuestion } from "./openai";
 import { z } from "zod";
-import { insertQuestionSchema, AskResponse } from "@shared/schema";
+import { insertQuestionSchema, AskResponse, questions } from "@shared/schema";
+import { db } from "./db";
+import { eq, desc } from "drizzle-orm";
+
+// Function to cleanup old questions and media files for a user (keep only latest 20)
+async function cleanupOldQuestions(userId: number) {
+  try {
+    // Get all questions for this user, ordered by creation date (newest first)
+    const userQuestions = await db
+      .select()
+      .from(questions)
+      .where(eq(questions.userId, userId))
+      .orderBy(desc(questions.createdAt));
+
+    // If user has more than 20 questions, delete the old ones
+    if (userQuestions.length > 20) {
+      const questionsToDelete = userQuestions.slice(20); // Keep first 20, delete rest
+      
+      for (const question of questionsToDelete) {
+        // Clean up associated media files before deleting the question
+        if (question.imageUrl) {
+          try {
+            // Remove image files (both local and API paths)
+            if (question.imageUrl.startsWith('/')) {
+              const imagePath = path.join(process.cwd(), 'public', question.imageUrl);
+              await fs.promises.unlink(imagePath).catch(() => {}); // Ignore errors if file doesn't exist
+            }
+          } catch (err) {
+            console.warn(`Failed to delete image file: ${question.imageUrl}`, err);
+          }
+        }
+
+        if (question.audioUrl) {
+          try {
+            // Remove audio files (both filesystem and database)
+            if (question.audioUrl.startsWith('/audio/')) {
+              const audioPath = path.join(process.cwd(), 'public', question.audioUrl);
+              await fs.promises.unlink(audioPath).catch(() => {}); // Ignore errors if file doesn't exist
+            }
+            // Note: Database-stored audio is handled by the audio service
+          } catch (err) {
+            console.warn(`Failed to delete audio file: ${question.audioUrl}`, err);
+          }
+        }
+
+        // Delete the question from database
+        await db.delete(questions).where(eq(questions.id, question.id));
+      }
+      
+      console.log(`Cleaned up ${questionsToDelete.length} old questions for user ${userId}`);
+    }
+  } catch (error) {
+    console.error(`Error cleaning up old questions for user ${userId}:`, error);
+    // Don't throw - cleanup errors shouldn't block the main flow
+  }
+}
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Endpoint to serve audio files from the database

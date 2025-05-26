@@ -4,10 +4,49 @@ import fs from "fs";
 import path from "path";
 import { v4 as uuidv4 } from "uuid";
 import { Buffer } from "buffer";
+import crypto from "crypto";
 
 const openai = new OpenAI({ 
   apiKey: process.env.OPENAI_API_KEY || "sk-placeholder" 
 });
+
+// Simple in-memory cache for faster responses
+const responseCache = new Map<string, {
+  response: any;
+  timestamp: number;
+}>();
+
+// Cache for 1 hour to dramatically improve performance
+const CACHE_TTL = 60 * 60 * 1000;
+
+function getCacheKey(question: string, contentFilter: string): string {
+  return crypto.createHash('md5').update(`${question.toLowerCase().trim()}-${contentFilter}`).digest('hex');
+}
+
+function getCachedResponse(cacheKey: string) {
+  const cached = responseCache.get(cacheKey);
+  if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
+    return cached.response;
+  }
+  return null;
+}
+
+function setCachedResponse(cacheKey: string, response: any) {
+  responseCache.set(cacheKey, {
+    response,
+    timestamp: Date.now()
+  });
+  
+  // Clean up old cache entries to prevent memory leaks
+  if (responseCache.size > 500) {
+    const now = Date.now();
+    for (const [key, value] of responseCache.entries()) {
+      if (now - value.timestamp > CACHE_TTL) {
+        responseCache.delete(key);
+      }
+    }
+  }
+}
 
 const audioDir = path.join(process.cwd(), "public", "audio");
 if (!fs.existsSync(audioDir)) {
@@ -166,6 +205,15 @@ export async function processQuestion(
   generateAud: boolean = true
 ): Promise<{ text: string; imageUrl: string; audioUrl?: string; suggestedQuestions?: string[] }> {
   try {
+    // Check cache first for much faster responses
+    const cacheKey = getCacheKey(question, contentFilter);
+    const cachedResponse = getCachedResponse(cacheKey);
+    
+    if (cachedResponse) {
+      console.log("🚀 Returning cached response - instant speed!");
+      return cachedResponse;
+    }
+
     // Generate the answer text first
     const answer = await generateAnswer(question, contentFilter);
     
