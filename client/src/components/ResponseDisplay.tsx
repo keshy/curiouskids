@@ -9,13 +9,15 @@ interface ResponseDisplayProps {
   isLoading: boolean;
   textToSpeech: boolean;
   onSpeakingEnd: () => void;
+  currentQuestion?: string;
 }
 
 export default function ResponseDisplay({ 
   response, 
   isLoading,
   textToSpeech,
-  onSpeakingEnd
+  onSpeakingEnd,
+  currentQuestion
 }: ResponseDisplayProps) {
   const [isPlaying, setIsPlaying] = useState(false);
   const [audioProgress, setAudioProgress] = useState(0);
@@ -206,8 +208,23 @@ export default function ResponseDisplay({
             </div>
           )}
 
+          {/* Show the original question */}
+          {currentQuestion && (
+            <div className="mb-6 bg-gradient-to-r from-blue-100 to-purple-100 p-4 rounded-xl border-2 border-blue-300">
+              <div className="flex items-center space-x-2 mb-2">
+                <i className="ri-question-line text-blue-600 text-xl"></i>
+                <span className="font-semibold text-blue-800">Your Question:</span>
+              </div>
+              <p className="text-lg text-blue-900 italic">"{currentQuestion}"</p>
+            </div>
+          )}
+
           <div className="flex flex-col md:flex-row gap-6 items-center">
             <div className="md:w-1/2 order-2 md:order-1 bg-white/60 p-4 rounded-xl border border-purple-200">
+              <div className="flex items-center space-x-2 mb-3">
+                <i className="ri-lightbulb-line text-yellow-600 text-xl"></i>
+                <span className="font-semibold text-purple-800">My Answer:</span>
+              </div>
               <p className="text-xl leading-relaxed text-black">{response.text}</p>
             </div>
             <div className="md:w-1/2 order-1 md:order-2">

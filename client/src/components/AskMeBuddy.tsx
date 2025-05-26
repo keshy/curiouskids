@@ -260,6 +260,7 @@ export default function AskMeBuddy() {
           isLoading={isLoading}
           textToSpeech={settings.textToSpeech}
           onSpeakingEnd={handleSpeakingEnd}
+          currentQuestion={question}
         />
         
         <QuestionSuggestions 
