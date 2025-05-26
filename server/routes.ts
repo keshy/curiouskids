@@ -161,6 +161,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         // Import badge controller - using ES module import instead of require
         const badgeController = await import('./badge-controller');
         earnedBadge = await badgeController.checkAndAwardBadges(userId, savedQuestion);
+        
+        // Clean up old questions and media for this user (keep only latest 20)
+        await cleanupOldQuestions(userId);
       }
       
       // Prepare response with optional rewards field
