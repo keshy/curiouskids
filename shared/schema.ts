@@ -1,4 +1,4 @@
-import { pgTable, text, serial, integer, boolean, timestamp, primaryKey, uniqueIndex } from "drizzle-orm/pg-core";
+import { pgTable, text, varchar, serial, integer, boolean, timestamp, primaryKey, uniqueIndex } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
@@ -182,3 +182,101 @@ export const BadgeRarity = {
   EPIC: "epic",
   LEGENDARY: "legendary",
 } as const;
+
+// Friendships table for connecting users
+export const friendships = pgTable("friendships", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  friendId: integer("friend_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  status: varchar("status", { length: 20 }).notNull().default("pending"), // pending, accepted, blocked
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  acceptedAt: timestamp("accepted_at"),
+});
+
+export const insertFriendshipSchema = createInsertSchema(friendships).pick({
+  userId: true,
+  friendId: true,
+  status: true,
+});
+export type InsertFriendship = z.infer<typeof insertFriendshipSchema>;
+export type Friendship = typeof friendships.$inferSelect;
+
+// Groups table for study groups
+export const groups = pgTable("groups", {
+  id: serial("id").primaryKey(),
+  name: varchar("name", { length: 100 }).notNull(),
+  description: text("description"),
+  createdBy: integer("created_by").notNull().references(() => users.id, { onDelete: "cascade" }),
+  isPublic: boolean("is_public").notNull().default(false),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
+export const insertGroupSchema = createInsertSchema(groups).pick({
+  name: true,
+  description: true,
+  createdBy: true,
+  isPublic: true,
+});
+export type InsertGroup = z.infer<typeof insertGroupSchema>;
+export type Group = typeof groups.$inferSelect;
+
+// Group members table
+export const groupMembers = pgTable("group_members", {
+  id: serial("id").primaryKey(),
+  groupId: integer("group_id").notNull().references(() => groups.id, { onDelete: "cascade" }),
+  userId: integer("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  role: varchar("role", { length: 20 }).notNull().default("member"), // admin, member
+  joinedAt: timestamp("joined_at").notNull().defaultNow(),
+});
+
+export const insertGroupMemberSchema = createInsertSchema(groupMembers).pick({
+  groupId: true,
+  userId: true,
+  role: true,
+});
+export type InsertGroupMember = z.infer<typeof insertGroupMemberSchema>;
+export type GroupMember = typeof groupMembers.$inferSelect;
+
+// Shared Q&As table
+export const sharedQuestions = pgTable("shared_questions", {
+  id: serial("id").primaryKey(),
+  questionId: integer("question_id").notNull().references(() => questions.id, { onDelete: "cascade" }),
+  sharedBy: integer("shared_by").notNull().references(() => users.id, { onDelete: "cascade" }),
+  sharedWith: integer("shared_with").references(() => users.id, { onDelete: "cascade" }), // null if shared with group
+  groupId: integer("group_id").references(() => groups.id, { onDelete: "cascade" }), // null if shared with individual
+  message: text("message"), // Optional message from the sharer
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
+export const insertSharedQuestionSchema = createInsertSchema(sharedQuestions).pick({
+  questionId: true,
+  sharedBy: true,
+  sharedWith: true,
+  groupId: true,
+  message: true,
+});
+export type InsertSharedQuestion = z.infer<typeof insertSharedQuestionSchema>;
+export type SharedQuestion = typeof sharedQuestions.$inferSelect;
+
+// Group reports table for AI-generated summaries
+export const groupReports = pgTable("group_reports", {
+  id: serial("id").primaryKey(),
+  groupId: integer("group_id").references(() => groups.id, { onDelete: "cascade" }),
+  userId: integer("user_id").references(() => users.id, { onDelete: "cascade" }), // null if group report
+  title: varchar("title", { length: 200 }).notNull(),
+  content: text("content").notNull(),
+  reportType: varchar("report_type", { length: 50 }).notNull(), // group_summary, user_summary, learning_progress
+  generatedBy: integer("generated_by").notNull().references(() => users.id),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
+export const insertGroupReportSchema = createInsertSchema(groupReports).pick({
+  groupId: true,
+  userId: true,
+  title: true,
+  content: true,
+  reportType: true,
+  generatedBy: true,
+});
+export type InsertGroupReport = z.infer<typeof insertGroupReportSchema>;
+export type GroupReport = typeof groupReports.$inferSelect;

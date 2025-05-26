@@ -8,6 +8,7 @@ import Home from "@/pages/Home";
 import History from "@/pages/History";
 import Profile from "@/pages/Profile";
 import Settings from "@/pages/Settings";
+import Social from "@/pages/Social";
 import Login from "@/pages/Login";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import { QuestionProvider } from "@/contexts/QuestionContext";
